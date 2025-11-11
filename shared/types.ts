@@ -36,3 +36,24 @@ export type PopulatedAssignment = KeyAssignment & {
 export type KeyWithAssignments = Key & {
   assignments: PopulatedAssignment[];
 };
+// --- Reporting Types ---
+export type StatusDistributionItem = {
+  name: KeyStatus;
+  value: number;
+};
+export type DepartmentActivityItem = {
+  name: string;
+  keys: number;
+};
+export type OverdueKeyInfo = {
+  keyNumber: string;
+  roomNumber: string;
+  personName: string;
+  department: string;
+  dueDate: string;
+};
+export type ReportSummary = {
+  statusDistribution: StatusDistributionItem[];
+  departmentActivity: DepartmentActivityItem[];
+  overdueKeys: OverdueKeyInfo[];
+};

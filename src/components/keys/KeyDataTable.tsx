@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Key, KeyStatus } from "@shared/types";
 import { IssueKeyDialog } from './IssueKeyDialog';
 import { EditKeyDialog } from './EditKeyDialog';
@@ -29,6 +29,8 @@ import { useApi, useApiMutation } from '@/hooks/useApi';
 import { api } from '@/lib/api-client';
 import { Skeleton } from '../ui/skeleton';
 import { toast } from 'sonner';
+type SortableKey = keyof Key;
+type SortDirection = 'ascending' | 'descending';
 const StatusBadge = ({ status }: { status: KeyStatus }) => {
   const variantMap: Record<KeyStatus, BadgeProps["variant"]> = {
     Available: "secondary",
@@ -41,6 +43,7 @@ const StatusBadge = ({ status }: { status: KeyStatus }) => {
 export function KeyDataTable() {
   const { data: keysData, isLoading, error, refetch } = useApi<{ items: Key[] }>(['keys']);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKey; direction: SortDirection } | null>(null);
   const [dialogState, setDialogState] = useState<{
     issue?: Key;
     edit?: Key;
@@ -49,14 +52,42 @@ export function KeyDataTable() {
     lost?: Key;
     details?: Key;
   }>({});
+  const sortedKeys = useMemo(() => {
+    let sortableItems = keysData?.items ? [...keysData.items] : [];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [keysData, sortConfig]);
   const filteredKeys = useMemo(() => {
-    if (!keysData?.items) return [];
-    return keysData.items.filter(key =>
+    if (!sortedKeys) return [];
+    return sortedKeys.filter(key =>
       key.keyNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       key.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       key.keyType.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [keysData, searchTerm]);
+  }, [sortedKeys, searchTerm]);
+  const requestSort = (key: SortableKey) => {
+    let direction: SortDirection = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  const getSortIcon = (key: SortableKey) => {
+    if (!sortConfig || sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    }
+    return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
   const deleteMutation = useApiMutation<{ id: string }, string>(
     (keyId) => api(`/api/keys/${keyId}`, { method: 'DELETE' }),
     [['keys']]
@@ -196,12 +227,24 @@ export function KeyDataTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Key Number</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Room/Area</TableHead>
                   <TableHead>
-                    <Button variant="ghost" size="sm">
-                      Status <ArrowUpDown className="ml-2 h-4 w-4" />
+                    <Button variant="ghost" size="sm" onClick={() => requestSort('keyNumber')}>
+                      Key Number {getSortIcon('keyNumber')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" size="sm" onClick={() => requestSort('keyType')}>
+                      Type {getSortIcon('keyType')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" size="sm" onClick={() => requestSort('roomNumber')}>
+                      Room/Area {getSortIcon('roomNumber')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" size="sm" onClick={() => requestSort('status')}>
+                      Status {getSortIcon('status')}
                     </Button>
                   </TableHead>
                   <TableHead>Actions</TableHead>

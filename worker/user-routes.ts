@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { KeyEntity, PersonnelEntity, KeyAssignmentEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, Personnel, KeyAssignment } from "@shared/types";
+import { Key, Personnel, KeyAssignment, ReportSummary, KeyStatus } from "@shared/types";
 import { isAfter } from 'date-fns';
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
@@ -45,6 +45,53 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       })
     );
     return ok(c, populatedAssignments);
+  });
+  // --- REPORTS ---
+  app.get('/api/reports/summary', async (c) => {
+    await checkAndUpdateOverdueKeys(c.env);
+    const allKeys = (await KeyEntity.list(c.env)).items;
+    const allPersonnel = (await PersonnelEntity.list(c.env)).items;
+    const allAssignments = (await KeyAssignmentEntity.list(c.env)).items;
+    const personnelMap = new Map(allPersonnel.map(p => [p.id, p]));
+    // 1. Status Distribution
+    const statusCounts: Record<KeyStatus, number> = { Available: 0, Issued: 0, Overdue: 0, Lost: 0 };
+    allKeys.forEach(key => { statusCounts[key.status]++; });
+    const statusDistribution = Object.entries(statusCounts).map(([name, value]) => ({ name: name as KeyStatus, value }));
+    // 2. Department Activity
+    const departmentCounts: Record<string, number> = {};
+    const activeAssignments = allAssignments.filter(a => !a.returnDate);
+    activeAssignments.forEach(assignment => {
+      const person = personnelMap.get(assignment.personnelId);
+      if (person) {
+        departmentCounts[person.department] = (departmentCounts[person.department] || 0) + 1;
+      }
+    });
+    const departmentActivity = Object.entries(departmentCounts).map(([name, keys]) => ({ name, keys }));
+    // 3. Overdue Keys
+    const overdueKeys = await Promise.all(
+      allKeys
+        .filter(k => k.status === 'Overdue')
+        .map(async key => {
+          const assignment = allAssignments.find(a => a.keyId === key.id && !a.returnDate);
+          if (assignment) {
+            const person = personnelMap.get(assignment.personnelId);
+            return {
+              keyNumber: key.keyNumber,
+              roomNumber: key.roomNumber,
+              personName: person?.name || 'Unknown',
+              department: person?.department || 'Unknown',
+              dueDate: assignment.dueDate,
+            };
+          }
+          return null;
+        })
+    );
+    const summary: ReportSummary = {
+      statusDistribution,
+      departmentActivity,
+      overdueKeys: overdueKeys.filter(Boolean),
+    };
+    return ok(c, summary);
   });
   // --- KEYS ---
   app.get('/api/keys', async (c) => {
