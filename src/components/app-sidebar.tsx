@@ -4,12 +4,13 @@ import { Home, KeyRound, Users, BarChart3, Settings, Lock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ThemeToggle";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/keys", label: "Key Inventory", icon: KeyRound },
@@ -43,6 +44,10 @@ export function AppSidebar(): JSX.Element {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter className="flex items-center justify-between p-2">
+        <p className="text-xs text-muted-foreground px-2">Built with ❤�� at Cloudflare</p>
+        <ThemeToggle />
+      </SidebarFooter>
     </Sidebar>
   );
 }

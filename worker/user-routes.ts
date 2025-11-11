@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { KeyEntity, PersonnelEntity, KeyAssignmentEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, Personnel, KeyAssignment, ReportSummary, KeyStatus } from "@shared/types";
+import { Key, Personnel, KeyAssignment, ReportSummary, KeyStatus, OverdueKeyInfo } from "@shared/types";
 import { isAfter } from 'date-fns';
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
@@ -68,30 +68,39 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     const departmentActivity = Object.entries(departmentCounts).map(([name, keys]) => ({ name, keys }));
     // 3. Overdue Keys
-    const overdueKeys = await Promise.all(
-      allKeys
-        .filter(k => k.status === 'Overdue')
-        .map(async key => {
-          const assignment = allAssignments.find(a => a.keyId === key.id && !a.returnDate);
-          if (assignment) {
-            const person = personnelMap.get(assignment.personnelId);
-            return {
-              keyNumber: key.keyNumber,
-              roomNumber: key.roomNumber,
-              personName: person?.name || 'Unknown',
-              department: person?.department || 'Unknown',
-              dueDate: assignment.dueDate,
-            };
-          }
-          return null;
-        })
-    );
+    const overdueKeysPromises = allKeys
+      .filter(k => k.status === 'Overdue')
+      .map(async (key): Promise<OverdueKeyInfo | null> => {
+        const assignment = allAssignments.find(a => a.keyId === key.id && !a.returnDate);
+        if (assignment) {
+          const person = personnelMap.get(assignment.personnelId);
+          return {
+            keyNumber: key.keyNumber,
+            roomNumber: key.roomNumber,
+            personName: person?.name || 'Unknown',
+            department: person?.department || 'Unknown',
+            dueDate: assignment.dueDate,
+          };
+        }
+        return null;
+      });
+    const overdueKeysResults = await Promise.all(overdueKeysPromises);
     const summary: ReportSummary = {
       statusDistribution,
       departmentActivity,
-      overdueKeys: overdueKeys.filter(Boolean),
+      overdueKeys: overdueKeysResults.filter((k): k is OverdueKeyInfo => k !== null),
     };
     return ok(c, summary);
+  });
+  // --- SETTINGS ---
+  app.post('/api/settings/reset', async (c) => {
+    const allKeys = await KeyEntity.list(c.env);
+    const allPersonnel = await PersonnelEntity.list(c.env);
+    const allAssignments = await KeyAssignmentEntity.list(c.env);
+    await KeyEntity.deleteMany(c.env, allKeys.items.map(k => k.id));
+    await PersonnelEntity.deleteMany(c.env, allPersonnel.items.map(p => p.id));
+    await KeyAssignmentEntity.deleteMany(c.env, allAssignments.items.map(a => a.id));
+    return ok(c, { message: 'All data cleared successfully.' });
   });
   // --- KEYS ---
   app.get('/api/keys', async (c) => {
