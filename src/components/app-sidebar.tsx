@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, KeyRound, Users, BarChart3, Settings, Lock } from "lucide-react";
+import { Home, KeyRound, Users, BarChart3, Settings, Lock, PanelLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -21,6 +22,7 @@ const navItems = [
 ];
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
+  const { toggleSidebar } = useSidebar();
   return (
     <Sidebar>
       <SidebarRail />
@@ -48,9 +50,14 @@ export function AppSidebar(): JSX.Element {
       </SidebarContent>
       <SidebarFooter className="flex flex-col items-start gap-2 border-t border-sidebar-border p-2">
         <SidebarSeparator />
-        <p className="text-xs text-muted-foreground px-2 group-data-[collapsible=icon]:hidden">
-          Built with ❤️ at Cloudflare
-        </p>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={toggleSidebar}>
+              <PanelLeft className="h-5 w-5" />
+              <span>Collapse</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
