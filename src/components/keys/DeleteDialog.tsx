@@ -17,7 +17,6 @@ type DeleteDialogProps = {
   isPending: boolean;
   itemName: string;
   itemType: string;
-  confirmationText?: string;
 };
 export function DeleteDialog({
   isOpen,
@@ -26,24 +25,22 @@ export function DeleteDialog({
   isPending,
   itemName,
   itemType,
-  confirmationText = "Yes, delete"
 }: DeleteDialogProps) {
-  const isDestructive = confirmationText.toLowerCase().includes('delete') || confirmationText.toLowerCase().includes('lost');
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently update the {itemType}{' '}
+            This action cannot be undone. This will permanently delete the {itemType}{' '}
             <strong>"{itemName}"</strong>.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant={isDestructive ? "destructive" : "default"} onClick={onConfirm} disabled={isPending}>
-              {isPending ? "Processing..." : confirmationText}
+            <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
+              {isPending ? "Deleting..." : "Yes, delete"}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

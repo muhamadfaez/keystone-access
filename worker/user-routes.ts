@@ -19,7 +19,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.get('/api/assignments/recent', async (c) => {
     const assignmentsPage = await KeyAssignmentEntity.list(c.env, null, 5);
-    const assignments = assignmentsPage.items;
+    const assignments = assignmentsPage.items.sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
     const populatedAssignments = await Promise.all(
       assignments.map(async (assignment) => {
         const key = await new KeyEntity(c.env, assignment.keyId).getState();
@@ -43,6 +43,36 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, await KeyEntity.create(c.env, newKey));
   });
+  app.put('/api/keys/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<Key>>();
+    const key = new KeyEntity(c.env, id);
+    if (!(await key.exists())) return notFound(c, 'Key not found');
+    await key.patch({
+      keyNumber: body.keyNumber,
+      keyType: body.keyType,
+      roomNumber: body.roomNumber,
+    });
+    return ok(c, await key.getState());
+  });
+  app.delete('/api/keys/:id', async (c) => {
+    const id = c.req.param('id');
+    const existed = await KeyEntity.delete(c.env, id);
+    if (!existed) return notFound(c, 'Key not found');
+    return ok(c, { id });
+  });
+  app.post('/api/keys/:id/return', async (c) => {
+    const keyId = c.req.param('id');
+    const key = new KeyEntity(c.env, keyId);
+    if (!(await key.exists())) return notFound(c, 'Key not found');
+    const assignments = await KeyAssignmentEntity.list(c.env);
+    const assignment = assignments.items.find(a => a.keyId === keyId && !a.returnDate);
+    if (!assignment) return bad(c, 'Key is not currently assigned');
+    const assignmentEntity = new KeyAssignmentEntity(c.env, assignment.id);
+    await assignmentEntity.patch({ returnDate: new Date().toISOString() });
+    await key.patch({ status: 'Available' });
+    return ok(c, await key.getState());
+  });
   // --- PERSONNEL ---
   app.get('/api/personnel', async (c) => ok(c, await PersonnelEntity.list(c.env)));
   app.post('/api/personnel', async (c) => {
@@ -56,6 +86,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       phone: body.phone || '',
     };
     return ok(c, await PersonnelEntity.create(c.env, newPerson));
+  });
+  app.put('/api/personnel/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<Personnel>>();
+    const person = new PersonnelEntity(c.env, id);
+    if (!(await person.exists())) return notFound(c, 'Personnel not found');
+    await person.patch({
+      name: body.name,
+      department: body.department,
+      email: body.email,
+      phone: body.phone,
+    });
+    return ok(c, await person.getState());
+  });
+  app.delete('/api/personnel/:id', async (c) => {
+    const id = c.req.param('id');
+    const existed = await PersonnelEntity.delete(c.env, id);
+    if (!existed) return notFound(c, 'Personnel not found');
+    return ok(c, { id });
   });
   // --- ASSIGNMENTS ---
   app.post('/api/assignments', async (c) => {

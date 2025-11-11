@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,15 @@ import { AddPersonnelDialog } from "@/components/personnel/AddPersonnelDialog";
 export function PersonnelPage() {
   const { data: personnelData, isLoading, error } = useApi<{ items: Personnel[] }>(['personnel']);
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredPersonnel = useMemo(() => {
+    if (!personnelData?.items) return [];
+    return personnelData.items.filter(person =>
+      person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.department.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [personnelData, searchTerm]);
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,10 +37,15 @@ export function PersonnelPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <Input placeholder="Search personnel..." className="max-w-sm" />
+                <Input
+                  placeholder="Search personnel..."
+                  className="max-w-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               <PersonnelDataTable
-                data={personnelData?.items || []}
+                data={filteredPersonnel}
                 isLoading={isLoading}
                 error={error}
               />
