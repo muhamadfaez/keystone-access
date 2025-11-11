@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarRail,
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -25,7 +24,6 @@ export function AppSidebar(): JSX.Element {
   const { toggleSidebar } = useSidebar();
   return (
     <Sidebar>
-      <SidebarRail />
       <SidebarHeader>
         <div className="flex items-center gap-2.5 px-2 py-1">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
