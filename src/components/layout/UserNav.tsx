@@ -17,8 +17,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogOut, Settings, User } from "lucide-react";
 import { toast } from 'sonner';
+import { useAuthStore } from '@/stores/authStore';
 export function UserNav() {
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const handleLogout = () => {
+    logout();
+    toast.info("You have been logged out.");
+    navigate('/login');
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -50,7 +57,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => toast.info("Logout functionality coming soon!")}>
+        <DropdownMenuItem onSelect={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

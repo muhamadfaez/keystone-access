@@ -17,32 +17,41 @@ import { PersonnelPage } from '@/pages/PersonnelPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
+import { LoginPage } from './pages/LoginPage';
+import { ProtectedRoute } from './components/layout/ProtectedRoute';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: <LoginPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
     path: "/",
-    element: <HomePage />,
+    element: <ProtectedRoute />,
     errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/keys",
-    element: <KeyInventoryPage />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/personnel",
-    element: <PersonnelPage />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/reports",
-    element: <ReportsPage />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/settings",
-    element: <SettingsPage />,
-    errorElement: <RouteErrorBoundary />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+      {
+        path: "keys",
+        element: <KeyInventoryPage />,
+      },
+      {
+        path: "personnel",
+        element: <PersonnelPage />,
+      },
+      {
+        path: "reports",
+        element: <ReportsPage />,
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />,
+      },
+    ],
   },
 ]);
 // Do not touch this code
