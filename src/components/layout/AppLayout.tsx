@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNavbar } from "./TopNavbar";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 type AppLayoutProps = {
   children: React.ReactNode;
   container?: boolean;
