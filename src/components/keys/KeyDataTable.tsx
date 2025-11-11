@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge, BadgeProps } from "@/components/ui/badge";
 import { MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Key, KeyStatus } from "@shared/types";
@@ -40,9 +39,13 @@ const StatusBadge = ({ status }: { status: KeyStatus }) => {
   };
   return <Badge variant={variantMap[status]}>{status}</Badge>;
 };
-export function KeyDataTable() {
-  const { data: keysData, isLoading, error, refetch } = useApi<{ items: Key[] }>(['keys']);
-  const [searchTerm, setSearchTerm] = useState('');
+type KeyDataTableProps = {
+  statusFilter: string;
+  typeFilter: string;
+  searchTerm: string;
+};
+export function KeyDataTable({ statusFilter, typeFilter, searchTerm }: KeyDataTableProps) {
+  const { data: keysData, isLoading, error } = useApi<{ items: Key[] }>(['keys']);
   const [sortConfig, setSortConfig] = useState<{ key: SortableKey; direction: SortDirection } | null>(null);
   const [dialogState, setDialogState] = useState<{
     issue?: Key;
@@ -69,12 +72,16 @@ export function KeyDataTable() {
   }, [keysData, sortConfig]);
   const filteredKeys = useMemo(() => {
     if (!sortedKeys) return [];
-    return sortedKeys.filter(key =>
-      key.keyNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      key.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      key.keyType.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [sortedKeys, searchTerm]);
+    return sortedKeys.filter(key => {
+      const statusMatch = statusFilter === 'all' || key.status === statusFilter;
+      const typeMatch = typeFilter === 'all' || key.keyType === typeFilter;
+      const searchMatch =
+        key.keyNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        key.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        key.keyType.toLowerCase().includes(searchTerm.toLowerCase());
+      return statusMatch && typeMatch && searchMatch;
+    });
+  }, [sortedKeys, searchTerm, statusFilter, typeFilter]);
   const requestSort = (key: SortableKey) => {
     let direction: SortDirection = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -214,15 +221,6 @@ export function KeyDataTable() {
     <>
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <Input
-              placeholder="Search keys..."
-              className="max-w-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button variant="outline" size="sm" onClick={() => refetch()}>Refresh</Button>
-          </div>
           <div className="border rounded-md">
             <Table>
               <TableHeader>

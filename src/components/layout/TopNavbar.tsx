@@ -3,6 +3,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Notifications } from "./Notifications";
 import { UserNav } from "./UserNav";
+import { GlobalSearch } from './GlobalSearch';
 export function TopNavbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 border-b bg-background/80 backdrop-blur-sm">
@@ -10,6 +11,7 @@ export function TopNavbar() {
         <div className="lg:hidden">
           <SidebarTrigger />
         </div>
+        <GlobalSearch />
         <div className="flex-1" />
         <div className="flex items-center space-x-2">
           <Notifications />
