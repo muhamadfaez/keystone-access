@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -43,8 +44,11 @@ export function AppSidebar(): JSX.Element {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex items-center justify-center p-2">
-        <p className="text-xs text-muted-foreground px-2">Built with ❤️ at Cloudflare</p>
+      <SidebarFooter className="flex items-center justify-between border-t border-sidebar-border p-2">
+        <p className="text-xs text-muted-foreground px-2 group-data-[collapsible=icon]:hidden">
+          Built with ❤️ at Cloudflare
+        </p>
+        <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>
   );
