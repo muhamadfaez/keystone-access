@@ -1,12 +1,15 @@
 import React from 'react';
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Notifications } from "./Notifications";
 import { UserNav } from "./UserNav";
 import { GlobalSearch } from './GlobalSearch';
 export function TopNavbar() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 border-b bg-background/80 backdrop-blur-sm">
+    <SidebarInset
+      as="header"
+      className="fixed top-0 right-0 z-40 border-b bg-background/80 backdrop-blur-sm"
+    >
       <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
         <div className="lg:hidden">
           <SidebarTrigger />
@@ -19,6 +22,6 @@ export function TopNavbar() {
           <UserNav />
         </div>
       </div>
-    </header>
+    </SidebarInset>
   );
 }
