@@ -19,6 +19,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
 import { LoginPage } from './pages/LoginPage';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { ProfilePage } from './pages/ProfilePage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />,
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
       },
     ],
   },
