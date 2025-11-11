@@ -17,35 +17,89 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 import { MoreHorizontal, ArrowUpDown } from "lucide-react";
 import { Key, KeyStatus } from "@shared/types";
 import { IssueKeyDialog } from './IssueKeyDialog';
 import { Card, CardContent } from '../ui/card';
-const mockKeys: Key[] = [
-  { id: 'k1', keyNumber: 'M-101', keyType: 'Master', roomNumber: 'Building A', status: 'Issued' },
-  { id: 'k2', keyNumber: 'S-205', keyType: 'Single', roomNumber: '205', status: 'Available' },
-  { id: 'k3', keyNumber: 'SM-3', keyType: 'Sub-Master', roomNumber: '3rd Floor', status: 'Overdue' },
-  { id: 'k4', keyNumber: 'S-101A', keyType: 'Single', roomNumber: '101A', status: 'Available' },
-  { id: 'k5', keyNumber: 'S-101B', keyType: 'Single', roomNumber: '101B', status: 'Available' },
-  { id: 'k6', keyNumber: 'M-GYM', keyType: 'Master', roomNumber: 'Gymnasium', status: 'Lost' },
-  { id: 'k7', keyNumber: 'S-LIB1', keyType: 'Single', roomNumber: 'Library Main', status: 'Issued' },
-];
+import { useApi } from '@/hooks/useApi';
+import { Skeleton } from '../ui/skeleton';
 const StatusBadge = ({ status }: { status: KeyStatus }) => {
-  const variant: "default" | "secondary" | "destructive" | "outline" = {
+  const variantMap: Record<KeyStatus, BadgeProps["variant"]> = {
     Available: "secondary",
     Issued: "default",
     Overdue: "destructive",
     Lost: "outline",
-  }[status];
-  return <Badge variant={variant}>{status}</Badge>;
+  };
+  return <Badge variant={variantMap[status]}>{status}</Badge>;
 };
 export function KeyDataTable() {
+  const { data: keysData, isLoading, error } = useApi<{ items: Key[] }>(['keys']);
   const [isIssueDialogOpen, setIssueDialogOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const handleIssueKey = (key: Key) => {
     setSelectedKey(key);
     setIssueDialogOpen(true);
+  };
+  const renderContent = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <TableRow key={i}>
+          <TableCell colSpan={5}>
+            <Skeleton className="h-8 w-full" />
+          </TableCell>
+        </TableRow>
+      ));
+    }
+    if (error) {
+      return (
+        <TableRow>
+          <TableCell colSpan={5} className="text-center text-destructive">
+            Error loading keys: {error.message}
+          </TableCell>
+        </TableRow>
+      );
+    }
+    if (!keysData || keysData.items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={5} className="text-center text-muted-foreground">
+            No keys found.
+          </TableCell>
+        </TableRow>
+      );
+    }
+    return keysData.items.map((key) => (
+      <TableRow key={key.id}>
+        <TableCell className="font-medium">{key.keyNumber}</TableCell>
+        <TableCell>{key.keyType}</TableCell>
+        <TableCell>{key.roomNumber}</TableCell>
+        <TableCell>
+          <StatusBadge status={key.status} />
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleIssueKey(key)} disabled={key.status !== 'Available'}>
+                Issue Key
+              </DropdownMenuItem>
+              <DropdownMenuItem>View Details</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                Report Lost
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    ));
   };
   return (
     <>
@@ -71,37 +125,7 @@ export function KeyDataTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockKeys.map((key) => (
-                  <TableRow key={key.id}>
-                    <TableCell className="font-medium">{key.keyNumber}</TableCell>
-                    <TableCell>{key.keyType}</TableCell>
-                    <TableCell>{key.roomNumber}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={key.status} />
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleIssueKey(key)} disabled={key.status !== 'Available'}>
-                            Issue Key
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            Report Lost
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {renderContent()}
               </TableBody>
             </Table>
           </div>

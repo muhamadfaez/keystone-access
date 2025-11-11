@@ -1,75 +1,80 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { UserEntity, ChatBoardEntity } from "./entities";
+import { KeyEntity, PersonnelEntity, KeyAssignmentEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-
+import { Key, Personnel, KeyAssignment } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  app.get('/api/test', (c) => c.json({ success: true, data: { name: 'CF Workers Demo' }}));
-
-  // USERS
-  app.get('/api/users', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await UserEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
+  // --- DASHBOARD ---
+  app.get('/api/stats', async (c) => {
+    const allKeys = await KeyEntity.list(c.env);
+    const totalKeys = allKeys.items.length;
+    const keysIssued = allKeys.items.filter(k => k.status === 'Issued' || k.status === 'Overdue').length;
+    const overdueKeys = allKeys.items.filter(k => k.status === 'Overdue').length;
+    return ok(c, {
+      totalKeys,
+      keysIssued,
+      keysAvailable: totalKeys - keysIssued,
+      overdueKeys,
+    });
   });
-
-  app.post('/api/users', async (c) => {
-    const { name } = (await c.req.json()) as { name?: string };
-    if (!name?.trim()) return bad(c, 'name required');
-    return ok(c, await UserEntity.create(c.env, { id: crypto.randomUUID(), name: name.trim() }));
+  app.get('/api/assignments/recent', async (c) => {
+    const assignmentsPage = await KeyAssignmentEntity.list(c.env, null, 5);
+    const assignments = assignmentsPage.items;
+    const populatedAssignments = await Promise.all(
+      assignments.map(async (assignment) => {
+        const key = await new KeyEntity(c.env, assignment.keyId).getState();
+        const personnel = await new PersonnelEntity(c.env, assignment.personnelId).getState();
+        return { ...assignment, key, personnel };
+      })
+    );
+    return ok(c, populatedAssignments);
   });
-
-  // CHATS
-  app.get('/api/chats', async (c) => {
-    await ChatBoardEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await ChatBoardEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
+  // --- KEYS ---
+  app.get('/api/keys', async (c) => ok(c, await KeyEntity.list(c.env)));
+  app.post('/api/keys', async (c) => {
+    const body = await c.req.json<Partial<Key>>();
+    if (!isStr(body.keyNumber) || !isStr(body.roomNumber)) return bad(c, 'keyNumber and roomNumber are required');
+    const newKey: Key = {
+      id: crypto.randomUUID(),
+      keyNumber: body.keyNumber,
+      keyType: body.keyType || 'Single',
+      roomNumber: body.roomNumber,
+      status: 'Available',
+    };
+    return ok(c, await KeyEntity.create(c.env, newKey));
   });
-
-  app.post('/api/chats', async (c) => {
-    const { title } = (await c.req.json()) as { title?: string };
-    if (!title?.trim()) return bad(c, 'title required');
-    const created = await ChatBoardEntity.create(c.env, { id: crypto.randomUUID(), title: title.trim(), messages: [] });
-    return ok(c, { id: created.id, title: created.title });
+  // --- PERSONNEL ---
+  app.get('/api/personnel', async (c) => ok(c, await PersonnelEntity.list(c.env)));
+  app.post('/api/personnel', async (c) => {
+    const body = await c.req.json<Partial<Personnel>>();
+    if (!isStr(body.name) || !isStr(body.department) || !isStr(body.email)) return bad(c, 'name, department, and email are required');
+    const newPerson: Personnel = {
+      id: crypto.randomUUID(),
+      name: body.name,
+      department: body.department,
+      email: body.email,
+      phone: body.phone || '',
+    };
+    return ok(c, await PersonnelEntity.create(c.env, newPerson));
   });
-
-  // MESSAGES
-  app.get('/api/chats/:chatId/messages', async (c) => {
-    const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
-    if (!await chat.exists()) return notFound(c, 'chat not found');
-    return ok(c, await chat.listMessages());
-  });
-
-  app.post('/api/chats/:chatId/messages', async (c) => {
-    const chatId = c.req.param('chatId');
-    const { userId, text } = (await c.req.json()) as { userId?: string; text?: string };
-    if (!isStr(userId) || !text?.trim()) return bad(c, 'userId and text required');
-    const chat = new ChatBoardEntity(c.env, chatId);
-    if (!await chat.exists()) return notFound(c, 'chat not found');
-    return ok(c, await chat.sendMessage(userId, text.trim()));
-  });
-
-  // DELETE: Users
-  app.delete('/api/users/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await UserEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/users/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await UserEntity.deleteMany(c.env, list), ids: list });
-  });
-
-  // DELETE: Chats
-  app.delete('/api/chats/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await ChatBoardEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/chats/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await ChatBoardEntity.deleteMany(c.env, list), ids: list });
+  // --- ASSIGNMENTS ---
+  app.post('/api/assignments', async (c) => {
+    const body = await c.req.json<Partial<KeyAssignment>>();
+    if (!isStr(body.keyId) || !isStr(body.personnelId) || !isStr(body.dueDate)) {
+      return bad(c, 'keyId, personnelId, and dueDate are required');
+    }
+    const key = new KeyEntity(c.env, body.keyId);
+    if (!(await key.exists()) || (await key.getState()).status !== 'Available') {
+      return bad(c, 'Key is not available for assignment');
+    }
+    const newAssignment: KeyAssignment = {
+      id: crypto.randomUUID(),
+      keyId: body.keyId,
+      personnelId: body.personnelId,
+      issueDate: new Date().toISOString(),
+      dueDate: body.dueDate,
+    };
+    await key.patch({ status: 'Issued' });
+    return ok(c, await KeyAssignmentEntity.create(c.env, newAssignment));
   });
 }
