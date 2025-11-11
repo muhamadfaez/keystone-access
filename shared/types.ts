@@ -57,3 +57,10 @@ export type ReportSummary = {
   departmentActivity: DepartmentActivityItem[];
   overdueKeys: OverdueKeyInfo[];
 };
+// --- Notification Type ---
+export interface Notification {
+  id: string;
+  message: string;
+  timestamp: string; // ISO 8601 string
+  read: boolean;
+}

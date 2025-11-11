@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { KeyEntity, PersonnelEntity, KeyAssignmentEntity } from "./entities";
+import { KeyEntity, PersonnelEntity, KeyAssignmentEntity, NotificationEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, Personnel, KeyAssignment, ReportSummary, KeyStatus, OverdueKeyInfo } from "@shared/types";
+import { Key, Personnel, KeyAssignment, ReportSummary, KeyStatus, OverdueKeyInfo, Notification } from "@shared/types";
 import { isAfter } from 'date-fns';
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
@@ -14,6 +14,13 @@ async function checkAndUpdateOverdueKeys(env: Env) {
         const keyState = await key.getState();
         if (keyState.status === 'Issued') {
           await key.patch({ status: 'Overdue' });
+          const newNotification: Notification = {
+            id: crypto.randomUUID(),
+            message: `Key "${keyState.keyNumber}" is now overdue.`,
+            timestamp: new Date().toISOString(),
+            read: false,
+          };
+          await NotificationEntity.create(env, newNotification);
         }
       }
     }
@@ -35,8 +42,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
   });
   app.get('/api/assignments/recent', async (c) => {
-    const assignmentsPage = await KeyAssignmentEntity.list(c.env, null, 5);
-    const assignments = assignmentsPage.items.sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+    const assignmentsPage = await KeyAssignmentEntity.list(c.env);
+    const assignments = assignmentsPage.items.sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()).slice(0, 5);
     const populatedAssignments = await Promise.all(
       assignments.map(async (assignment) => {
         const key = await new KeyEntity(c.env, assignment.keyId).getState();
@@ -97,10 +104,31 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const allKeys = await KeyEntity.list(c.env);
     const allPersonnel = await PersonnelEntity.list(c.env);
     const allAssignments = await KeyAssignmentEntity.list(c.env);
+    const allNotifications = await NotificationEntity.list(c.env);
     await KeyEntity.deleteMany(c.env, allKeys.items.map(k => k.id));
     await PersonnelEntity.deleteMany(c.env, allPersonnel.items.map(p => p.id));
     await KeyAssignmentEntity.deleteMany(c.env, allAssignments.items.map(a => a.id));
+    await NotificationEntity.deleteMany(c.env, allNotifications.items.map(n => n.id));
     return ok(c, { message: 'All data cleared successfully.' });
+  });
+  // --- NOTIFICATIONS ---
+  app.get('/api/notifications', async (c) => {
+    const notificationsPage = await NotificationEntity.list(c.env, null, 100); // Fetch a larger number to sort
+    const sorted = notificationsPage.items
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10); // Return the 10 most recent
+    return ok(c, sorted);
+  });
+  app.post('/api/notifications/mark-read', async (c) => {
+    const { ids } = await c.req.json<{ ids: string[] }>();
+    if (!ids || !Array.isArray(ids)) return bad(c, 'Invalid payload');
+    for (const id of ids) {
+      const notification = new NotificationEntity(c.env, id);
+      if (await notification.exists()) {
+        await notification.patch({ read: true });
+      }
+    }
+    return ok(c, { success: true });
   });
   // --- KEYS ---
   app.get('/api/keys', async (c) => {
@@ -141,19 +169,35 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const keyId = c.req.param('id');
     const key = new KeyEntity(c.env, keyId);
     if (!(await key.exists())) return notFound(c, 'Key not found');
+    const keyState = await key.getState();
     const assignments = await KeyAssignmentEntity.list(c.env);
     const assignment = assignments.items.find(a => a.keyId === keyId && !a.returnDate);
     if (!assignment) return bad(c, 'Key is not currently assigned');
     const assignmentEntity = new KeyAssignmentEntity(c.env, assignment.id);
     await assignmentEntity.patch({ returnDate: new Date().toISOString() });
     await key.patch({ status: 'Available' });
+    const newNotification: Notification = {
+      id: crypto.randomUUID(),
+      message: `Key "${keyState.keyNumber}" was returned.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    await NotificationEntity.create(c.env, newNotification);
     return ok(c, await key.getState());
   });
   app.post('/api/keys/:id/lost', async (c) => {
     const keyId = c.req.param('id');
     const key = new KeyEntity(c.env, keyId);
     if (!(await key.exists())) return notFound(c, 'Key not found');
+    const keyState = await key.getState();
     await key.patch({ status: 'Lost' });
+    const newNotification: Notification = {
+      id: crypto.randomUUID(),
+      message: `Key "${keyState.keyNumber}" was reported lost.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    await NotificationEntity.create(c.env, newNotification);
     return ok(c, await key.getState());
   });
   app.get('/api/keys/:id/history', async (c) => {
@@ -225,6 +269,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!(await key.exists()) || (await key.getState()).status !== 'Available') {
       return bad(c, 'Key is not available for assignment');
     }
+    const keyState = await key.getState();
+    const person = await new PersonnelEntity(c.env, body.personnelId).getState();
     const newAssignment: KeyAssignment = {
       id: crypto.randomUUID(),
       keyId: body.keyId,
@@ -233,6 +279,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       dueDate: body.dueDate,
     };
     await key.patch({ status: 'Issued' });
-    return ok(c, await KeyAssignmentEntity.create(c.env, newAssignment));
+    const createdAssignment = await KeyAssignmentEntity.create(c.env, newAssignment);
+    const newNotification: Notification = {
+      id: crypto.randomUUID(),
+      message: `Key "${keyState.keyNumber}" issued to ${person.name}.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    await NotificationEntity.create(c.env, newNotification);
+    return ok(c, createdAssignment);
   });
 }

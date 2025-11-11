@@ -1,5 +1,5 @@
 import { IndexedEntity } from "./core-utils";
-import type { Key, Personnel, KeyAssignment, KeyStatus } from "@shared/types";
+import type { Key, Personnel, KeyAssignment, Notification } from "@shared/types";
 // KEY ENTITY
 export class KeyEntity extends IndexedEntity<Key> {
   static readonly entityName = "key";
@@ -34,5 +34,16 @@ export class KeyAssignmentEntity extends IndexedEntity<KeyAssignment> {
     personnelId: "",
     issueDate: "",
     dueDate: "",
+  };
+}
+// NOTIFICATION ENTITY
+export class NotificationEntity extends IndexedEntity<Notification> {
+  static readonly entityName = "notification";
+  static readonly indexName = "notifications";
+  static readonly initialState: Notification = {
+    id: "",
+    message: "",
+    timestamp: "",
+    read: false,
   };
 }
