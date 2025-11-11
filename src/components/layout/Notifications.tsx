@@ -6,7 +6,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuFooter,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff, Check } from "lucide-react";
@@ -91,7 +90,7 @@ export function Notifications() {
         {notifications && notifications.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuFooter>
+            <div className="p-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -102,7 +101,7 @@ export function Notifications() {
                 <Check className="mr-2 h-4 w-4" />
                 Mark all as read
               </Button>
-            </DropdownMenuFooter>
+            </div>
           </>
         )}
       </DropdownMenuContent>
