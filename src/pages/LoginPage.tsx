@@ -62,7 +62,7 @@ export function LoginPage() {
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
             Enter your credentials to access the system.
-          </-CardDescription>
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleCredentialLogin}>
           <CardContent className="grid gap-4">
