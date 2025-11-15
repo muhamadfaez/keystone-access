@@ -15,9 +15,11 @@ import { Lock, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
+import { useSettingsStore } from '@/stores/settingsStore';
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const enableGoogleAuth = useSettingsStore((state) => state.auth.enableGoogleAuth);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('admin@university.edu');
   const [password, setPassword] = useState('password');
@@ -93,24 +95,28 @@ export function LoginPage() {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
-            <div className="relative my-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full" type="button" onClick={handleGoogleLogin} disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <GoogleIcon className="mr-2 h-4 w-4" />
-              )}
-              Sign in with Google
-            </Button>
+            {enableGoogleAuth && (
+              <>
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" type="button" onClick={handleGoogleLogin} disabled={isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <GoogleIcon className="mr-2 h-4 w-4" />
+                  )}
+                  Sign in with Google
+                </Button>
+              </>
+            )}
           </CardContent>
         </form>
       </Card>

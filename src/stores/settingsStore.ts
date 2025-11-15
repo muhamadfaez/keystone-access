@@ -5,11 +5,16 @@ interface NotificationPreferences {
   keyReturns: boolean;
   keyIssues: boolean;
 }
+interface AuthPreferences {
+  enableGoogleAuth: boolean;
+}
 interface SettingsState {
   notifications: NotificationPreferences;
+  auth: AuthPreferences;
   toggleOverdueKeys: () => void;
   toggleKeyReturns: () => void;
   toggleKeyIssues: () => void;
+  toggleGoogleAuth: () => void;
 }
 export const useSettingsStore = create<SettingsState>()(
   persist(
@@ -18,6 +23,9 @@ export const useSettingsStore = create<SettingsState>()(
         overdueKeys: true,
         keyReturns: true,
         keyIssues: false,
+      },
+      auth: {
+        enableGoogleAuth: true,
       },
       toggleOverdueKeys: () =>
         set((state) => ({
@@ -30,6 +38,10 @@ export const useSettingsStore = create<SettingsState>()(
       toggleKeyIssues: () =>
         set((state) => ({
           notifications: { ...state.notifications, keyIssues: !state.notifications.keyIssues },
+        })),
+      toggleGoogleAuth: () =>
+        set((state) => ({
+          auth: { ...state.auth, enableGoogleAuth: !state.auth.enableGoogleAuth },
         })),
     }),
     {
