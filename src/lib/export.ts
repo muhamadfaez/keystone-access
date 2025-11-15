@@ -39,26 +39,26 @@ export const exportToPdf = (reportData: ReportSummary) => {
     startY: 30,
     head: [['Key Status Distribution']],
     body: [
-      [{ content: 'Status', styles: { fontStyle: 'bold' } }, { content: 'Count', styles: { fontStyle: 'bold' } }]
-    ].concat(reportData.statusDistribution.map(item => [item.name, item.value])),
+      ['Status', 'Count']
+    ].concat(reportData.statusDistribution.map(item => [item.name, item.value.toString()])),
     theme: 'grid',
-    headStyles: { fillColor: [22, 163, 74] },
+    headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold' },
   });
   // Department Activity Table
   doc.autoTable({
     head: [['Keys Issued by Department']],
     body: [
-      [{ content: 'Department', styles: { fontStyle: 'bold' } }, { content: 'Keys Issued', styles: { fontStyle: 'bold' } }]
-    ].concat(reportData.departmentActivity.map(item => [item.name, item.keys])),
+      ['Department', 'Keys Issued']
+    ].concat(reportData.departmentActivity.map(item => [item.name, item.keys.toString()])),
     theme: 'grid',
-    headStyles: { fillColor: [37, 99, 235] },
+    headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
   });
   // Overdue Keys Table
   if (reportData.overdueKeys.length > 0) {
     doc.autoTable({
       head: [['Overdue Keys Report']],
       body: [
-        ['Key Number', 'Assigned To', 'Department', 'Due Date'].map(h => ({ content: h, styles: { fontStyle: 'bold' } }))
+        ['Key Number', 'Assigned To', 'Department', 'Due Date']
       ].concat(reportData.overdueKeys.map(item => [
         item.keyNumber,
         item.personName,
@@ -66,7 +66,7 @@ export const exportToPdf = (reportData: ReportSummary) => {
         format(new Date(item.dueDate), 'MMM dd, yyyy')
       ])),
       theme: 'grid',
-      headStyles: { fillColor: [220, 38, 38] },
+      headStyles: { fillColor: [220, 38, 38], fontStyle: 'bold' },
     });
   } else {
     doc.autoTable({
