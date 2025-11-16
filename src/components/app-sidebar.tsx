@@ -13,7 +13,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
@@ -70,17 +69,6 @@ export function AppSidebar(): JSX.Element {
       </SidebarContent>
       {!isMobile && (
         <SidebarFooter className="flex flex-col items-start gap-4 border-t-0 p-4">
-          <div className="w-full group-data-[state=collapsed]:hidden">
-            <Card className="bg-primary/5 dark:bg-primary/10 border-primary/20">
-              <CardContent className="p-3 text-center">
-                <Zap className="mx-auto h-6 w-6 text-primary mb-2" />
-                <p className="text-sm font-semibold">Upgrade to PRO</p>
-                <p className="text-xs text-muted-foreground mb-3">Unlock all features</p>
-                <Button size="sm" className="w-full">Upgrade</Button>
-              </CardContent>
-            </Card>
-          </div>
-          <SidebarSeparator className="group-data-[state=collapsed]:hidden" />
           <div className="flex items-center justify-between w-full group-data-[state=collapsed]:justify-center">
             <NavLink to="/profile" className="flex items-center gap-2 rounded-md p-1 -m-1 hover:bg-accent transition-colors flex-1 min-w-0 group-data-[state=collapsed]:hidden">
               <Avatar className="h-8 w-8">
