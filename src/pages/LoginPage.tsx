@@ -52,7 +52,7 @@ export function LoginPage() {
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
       <div className="absolute inset-0 bg-gradient-mesh opacity-10 dark:opacity-20" />
       <div className="relative z-10 flex flex-col items-center space-y-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
           <Lock className="h-7 w-7" />
         </div>
         <h1 className="text-3xl font-bold font-display tracking-tight">

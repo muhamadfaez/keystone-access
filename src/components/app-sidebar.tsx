@@ -80,14 +80,14 @@ export function AppSidebar(): JSX.Element {
           </div>
           <SidebarSeparator />
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
+            <NavLink to="/profile" className="flex items-center gap-2 rounded-md p-1 -m-1 hover:bg-accent transition-colors flex-1 min-w-0">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder-user.jpg" alt="User avatar" />
                 <AvatarFallback>
                   {isLoading ? <Skeleton className="h-8 w-8 rounded-full" /> : userProfile ? getInitials(userProfile.name) : 'AU'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col group-data-[state=collapsed]:hidden">
+              <div className="flex flex-col group-data-[state=collapsed]:hidden min-w-0">
                 {isLoading ? (
                   <div className="space-y-1">
                     <Skeleton className="h-4 w-20" />
@@ -95,16 +95,16 @@ export function AppSidebar(): JSX.Element {
                   </div>
                 ) : (
                   <>
-                    <span className="text-sm font-medium">{userProfile?.name || 'Admin User'}</span>
+                    <span className="text-sm font-medium truncate">{userProfile?.name || 'Admin User'}</span>
                     <span className="text-xs text-muted-foreground">PRO Member</span>
                   </>
                 )}
               </div>
-            </div>
+            </NavLink>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 flex-shrink-0"
               onClick={toggleSidebar}
             >
               {isCollapsed ? <PanelRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
