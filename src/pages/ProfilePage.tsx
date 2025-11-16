@@ -13,14 +13,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "sonner";
 import { useApi, useApiMutation } from '@/hooks/useApi';
-import { UserProfile } from '@shared/types';
+import { AuthUser } from '@shared/types';
 import { api } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/authStore';
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   department: z.string().min(1, "Department is required"),
+  phone: z.string().optional(),
 });
 const getInitials = (name: string) => {
+  if (!name) return 'AU';
   const names = name.split(' ');
   if (names.length > 1) {
     return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
@@ -28,30 +31,38 @@ const getInitials = (name: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 export function ProfilePage() {
-  const { data: userProfile, isLoading, error } = useApi<UserProfile>(['profile']);
+  const currentUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const { data: userData, isLoading, error } = useApi<AuthUser>(
+    ['users', currentUser?.id],
+    { enabled: !!currentUser?.id }
+  );
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: '',
       email: '',
       department: '',
+      phone: '',
     },
   });
   useEffect(() => {
-    if (userProfile) {
-      form.reset(userProfile);
+    if (userData) {
+      form.reset(userData);
     }
-  }, [userProfile, form]);
-  const updateProfileMutation = useApiMutation<UserProfile, Partial<UserProfile>>(
-    (updatedProfile) => api('/api/profile', { method: 'PUT', body: JSON.stringify(updatedProfile) }),
-    [['profile']]
+  }, [userData, form]);
+  const updateUserMutation = useApiMutation<AuthUser, Partial<AuthUser>>(
+    (updatedUser) => api(`/api/users/${currentUser?.id}`, { method: 'PUT', body: JSON.stringify(updatedUser) }),
+    [['users', currentUser?.id]]
   );
   const onSubmit = (values: z.infer<typeof profileSchema>) => {
-    updateProfileMutation.mutate(values, {
+    if (!currentUser) return;
+    updateUserMutation.mutate(values, {
       onSuccess: (data) => {
         toast.success("Profile Updated", {
           description: "Your profile information has been saved.",
         });
+        setUser(data); // Update global auth state
         form.reset(data);
       },
       onError: (err) => {
@@ -65,7 +76,7 @@ export function ProfilePage() {
     e.preventDefault();
     toast.info("Password changes are not yet implemented.");
   };
-  if (isLoading) {
+  if (isLoading || !currentUser) {
     return (
       <AppLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -114,11 +125,11 @@ export function ProfilePage() {
                 <CardContent className="pt-6 flex flex-col items-center text-center">
                   <Avatar className="h-24 w-24 mb-4">
                     <AvatarImage src="/placeholder-user.jpg" alt="User avatar" />
-                    <AvatarFallback>{userProfile ? getInitials(userProfile.name) : 'AU'}</AvatarFallback>
+                    <AvatarFallback>{userData ? getInitials(userData.name) : 'AU'}</AvatarFallback>
                   </Avatar>
-                  <h3 className="text-xl font-semibold">{userProfile?.name}</h3>
-                  <p className="text-sm text-muted-foreground">{userProfile?.email}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{userProfile?.department}</p>
+                  <h3 className="text-xl font-semibold">{userData?.name}</h3>
+                  <p className="text-sm text-muted-foreground">{userData?.email}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{userData?.department}</p>
                 </CardContent>
               </Card>
             </div>
@@ -172,10 +183,23 @@ export function ProfilePage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Your phone number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </CardContent>
                     <CardFooter>
-                      <Button type="submit" disabled={updateProfileMutation.isPending}>
-                        {updateProfileMutation.isPending ? "Saving..." : "Update Profile"}
+                      <Button type="submit" disabled={updateUserMutation.isPending}>
+                        {updateUserMutation.isPending ? "Saving..." : "Update Profile"}
                       </Button>
                     </CardFooter>
                   </form>

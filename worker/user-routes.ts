@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { KeyEntity, KeyAssignmentEntity, NotificationEntity, UserProfileEntity, KeyRequestEntity, UserEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, ReportSummary, KeyStatus, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment } from "@shared/types";
+import { Key, ReportSummary, KeyStatus, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment, AuthUser } from "@shared/types";
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
   const activeAssignments = assignments.items.filter((a) => !a.returnDate);
@@ -293,19 +293,34 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     };
     return ok(c, await UserEntity.create(c.env, newUser));
   });
+  app.get('/api/users/:id', async (c) => {
+    const id = c.req.param('id');
+    const user = new UserEntity(c.env, id);
+    if (!(await user.exists())) {
+      return notFound(c, 'User not found');
+    }
+    const userState = await user.getState();
+    const { password: _, ...userResponse } = userState;
+    return ok(c, userResponse);
+  });
   app.put('/api/users/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json<Partial<User>>();
     const user = new UserEntity(c.env, id);
     if (!(await user.exists())) return notFound(c, 'User not found');
+    // Keep existing password if not provided
+    const existingUser = await user.getState();
     await user.patch({
       name: body.name,
       department: body.department,
       email: body.email,
       phone: body.phone,
-      role: body.role
+      role: body.role,
+      password: existingUser.password
     });
-    return ok(c, await user.getState());
+    const updatedUser = await user.getState();
+    const { password: _, ...userResponse } = updatedUser;
+    return ok(c, userResponse);
   });
   app.delete('/api/users/:id', async (c) => {
     const id = c.req.param('id');

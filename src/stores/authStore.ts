@@ -8,6 +8,7 @@ interface AuthState {
   login: (credentials: Pick<User, 'email' | 'password'>) => Promise<AuthUser>;
   signup: (userData: Pick<User, 'name' | 'email' | 'password'>) => Promise<AuthUser>;
   logout: () => void;
+  setUser: (user: AuthUser) => void;
 }
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -31,6 +32,7 @@ export const useAuthStore = create<AuthState>()(
         return user;
       },
       logout: () => set({ user: null, isAuthenticated: false }),
+      setUser: (user) => set((state) => ({ ...state, user })),
     }),
     {
       name: 'auth-storage',
