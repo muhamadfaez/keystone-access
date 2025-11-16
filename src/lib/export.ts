@@ -61,7 +61,7 @@ export const exportToPdf = (reportData: ReportSummary) => {
         ['Key Number', 'Assigned To', 'Department', 'Due Date']
       ].concat(reportData.overdueKeys.map(item => [
         item.keyNumber,
-        item.personName,
+        item.userName,
         item.department,
         format(new Date(item.dueDate), 'MMM dd, yyyy')
       ])),
@@ -95,7 +95,7 @@ export const exportToExcel = (reportData: ReportSummary) => {
       reportData.overdueKeys.map(item => ({
         'Key Number': item.keyNumber,
         'Room/Area': item.roomNumber,
-        'Assigned To': item.personName,
+        'Assigned To': item.userName,
         'Department': item.department,
         'Due Date': format(new Date(item.dueDate), 'yyyy-MM-dd'),
       }))

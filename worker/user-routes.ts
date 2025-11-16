@@ -2,12 +2,11 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { KeyEntity, KeyAssignmentEntity, NotificationEntity, UserProfileEntity, KeyRequestEntity, UserEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, ReportSummary, KeyStatus, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User } from "@shared/types";interface KeyAssignment {
-  id?: string | number;
-
-  [key: string]: unknown;
-}interface KeyAssignment {id?: string | number;[key: string]: unknown;}interface KeyAssignmentProps {children?: React.ReactNode;className?: string;style?: React.CSSProperties;[key: string]: unknown;}async function checkAndUpdateOverdueKeys(env: Env) {const assignments = await KeyAssignmentEntity.list(env);const activeAssignments = assignments.items.filter((a) => !a.returnDate);for (const assignment of activeAssignments) {
-
+import { Key, ReportSummary, KeyStatus, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment } from "@shared/types";
+async function checkAndUpdateOverdueKeys(env: Env) {
+  const assignments = await KeyAssignmentEntity.list(env);
+  const activeAssignments = assignments.items.filter((a) => !a.returnDate);
+  for (const assignment of activeAssignments) {
     if (assignment.assignmentType === 'event' && assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
       const key = new KeyEntity(env, assignment.keyId);
       if (await key.exists()) {
@@ -27,12 +26,10 @@ import { Key, ReportSummary, KeyStatus, OverdueKeyInfo, Notification, UserProfil
   }
 }
 export function userRoutes(app: Hono<{Bindings: Env;}>) {
-
   app.use('*', async (c, next) => {
     await UserEntity.ensureSeed(c.env);
     await next();
   });
-
   app.post('/api/auth/signup', async (c) => {
     const body = await c.req.json<Partial<User>>();
     if (!isStr(body.name) || !isStr(body.email) || !isStr(body.password)) {
@@ -69,7 +66,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     const { password: _, ...userResponse } = user;
     return ok(c, userResponse);
   });
-
   app.get('/api/stats', async (c) => {
     await checkAndUpdateOverdueKeys(c.env);
     const allKeys = await KeyEntity.list(c.env);
@@ -95,18 +91,15 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     );
     return ok(c, populatedAssignments);
   });
-
   app.get('/api/reports/summary', async (c) => {
     await checkAndUpdateOverdueKeys(c.env);
     const allKeys = (await KeyEntity.list(c.env)).items;
     const allUsers = (await UserEntity.list(c.env)).items;
     const allAssignments = (await KeyAssignmentEntity.list(c.env)).items;
     const userMap = new Map(allUsers.map((p) => [p.id, p]));
-
     const statusCounts: Record<KeyStatus, number> = { Available: 0, Issued: 0, Overdue: 0, Lost: 0 };
     allKeys.forEach((key) => {statusCounts[key.status]++;});
     const statusDistribution = Object.entries(statusCounts).map(([name, value]) => ({ name: name as KeyStatus, value }));
-
     const departmentCounts: Record<string, number> = {};
     const activeAssignments = allAssignments.filter((a) => !a.returnDate);
     activeAssignments.forEach((assignment) => {
@@ -116,7 +109,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
       }
     });
     const departmentActivity = Object.entries(departmentCounts).map(([name, keys]) => ({ name, keys }));
-
     const overdueKeysPromises = allKeys.
     filter((k) => k.status === 'Overdue').
     map(async (key): Promise<OverdueKeyInfo | null> => {
@@ -141,20 +133,17 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     };
     return ok(c, summary);
   });
-
   app.post('/api/settings/reset', async (c) => {
     const allKeys = await KeyEntity.list(c.env);
     const allUsers = await UserEntity.list(c.env);
     const allAssignments = await KeyAssignmentEntity.list(c.env);
     const allNotifications = await NotificationEntity.list(c.env);
     await KeyEntity.deleteMany(c.env, allKeys.items.map((k) => k.id));
-
     const seedUserIds = UserEntity.seedData.map((u) => u.id);
     const usersToDelete = allUsers.items.filter((u) => !seedUserIds.includes(u.id));
     await UserEntity.deleteMany(c.env, usersToDelete.map((p) => p.id));
     await KeyAssignmentEntity.deleteMany(c.env, allAssignments.items.map((a) => a.id));
     await NotificationEntity.deleteMany(c.env, allNotifications.items.map((n) => n.id));
-
     const profile = new UserProfileEntity(c.env, 'main');
     if (await profile.exists()) {
       await profile.patch({ appLogoBase64: null });
@@ -170,7 +159,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     await profile.patch({ appLogoBase64: body.logo });
     return ok(c, await profile.getState());
   });
-
   app.get('/api/notifications', async (c) => {
     const notificationsPage = await NotificationEntity.list(c.env, null, 100);
     const sorted = notificationsPage.items.
@@ -189,11 +177,9 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     }
     return ok(c, { success: true });
   });
-
   app.get('/api/profile', async (c) => {
     const profile = new UserProfileEntity(c.env, 'main');
     if (!(await profile.exists())) {
-
       await profile.save(UserProfileEntity.initialState);
     }
     return ok(c, await profile.getState());
@@ -211,7 +197,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     });
     return ok(c, await profile.getState());
   });
-
   app.get('/api/keys', async (c) => {
     await checkAndUpdateOverdueKeys(c.env);
     return ok(c, await KeyEntity.list(c.env));
@@ -294,7 +279,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     );
     return ok(c, populated.sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()));
   });
-
   app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
   app.post('/api/users', async (c) => {
     const body = await c.req.json<Partial<User>>();
@@ -342,7 +326,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     );
     return ok(c, populated);
   });
-
   app.post('/api/assignments', async (c) => {
     const body = await c.req.json<Partial<KeyAssignment>>();
     if (!isStr(body.keyId) || !isStr(body.personnelId)) {
@@ -377,7 +360,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     await NotificationEntity.create(c.env, newNotification);
     return ok(c, createdAssignment);
   });
-
   app.get('/api/requests', async (c) => {
     const requestsPage = await KeyRequestEntity.list(c.env);
     const requests = requestsPage.items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -431,7 +413,6 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     if (!(await keyEntity.exists())) return notFound(c, 'Selected key not found');
     const key = await keyEntity.getState();
     if (key.status !== 'Available') return bad(c, 'Selected key is not available');
-
     const newAssignment: KeyAssignment = {
       id: crypto.randomUUID(),
       keyId: key.id,
@@ -441,11 +422,8 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
       dueDate: request.dueDate
     };
     await KeyAssignmentEntity.create(c.env, newAssignment);
-
     await keyEntity.patch({ status: 'Issued' });
-
     await requestEntity.patch({ status: 'Approved' });
-
     const user = await new UserEntity(c.env, request.personnelId).getState();
     const newNotification: Notification = {
       id: crypto.randomUUID(),

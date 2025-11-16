@@ -21,9 +21,9 @@ import { useAuthStore } from "@/stores/authStore";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home, adminOnly: false },
   { href: "/keys", label: "Key Inventory", icon: KeyRound, adminOnly: false },
-  { href: "/users", label: "Users", icon: Users, adminOnly: false },
+  { href: "/users", label: "Users", icon: Users, adminOnly: true },
   { href: "/requests", label: "Key Requests", icon: ClipboardCheck, adminOnly: false },
-  { href: "/reports", label: "Reports", icon: BarChart3, adminOnly: false },
+  { href: "/reports", label: "Reports", icon: BarChart3, adminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings, adminOnly: true },
 ];
 const getInitials = (name: string) => {
