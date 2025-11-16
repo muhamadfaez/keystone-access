@@ -464,8 +464,13 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     return ok(c, createdAssignment);
   });
   app.get('/api/requests', async (c) => {
+    const userId = c.req.query('userId');
     const requestsPage = await KeyRequestEntity.list(c.env);
-    const requests = requestsPage.items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    let allRequests = requestsPage.items;
+    if (userId) {
+      allRequests = allRequests.filter(req => req.personnelId === userId);
+    }
+    const requests = allRequests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     const populatedRequests = await Promise.all(
       requests.map(async (request) => {
         const user = await new UserEntity(c.env, request.personnelId).getState();

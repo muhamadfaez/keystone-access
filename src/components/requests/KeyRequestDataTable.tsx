@@ -37,8 +37,12 @@ const StatusBadge = ({ status }: { status: KeyRequestStatus }) => {
 type SortableKey = keyof PopulatedKeyRequest | 'user.name';
 type SortDirection = 'ascending' | 'descending';
 export function KeyRequestDataTable() {
-  const { data: requests, isLoading, error } = useApi<PopulatedKeyRequest[]>(['requests']);
   const user = useAuthStore((state) => state.user);
+  const requestsPath = user?.role === 'admin' ? 'requests' : `requests?userId=${user?.id}`;
+  const { data: requests, isLoading, error } = useApi<PopulatedKeyRequest[]>(
+    [requestsPath],
+    { enabled: !!user?.id }
+  );
   const [sortConfig, setSortConfig] = useState<{ key: SortableKey; direction: SortDirection } | null>(null);
   const [dialogState, setDialogState] = useState<{
     approve?: PopulatedKeyRequest;
