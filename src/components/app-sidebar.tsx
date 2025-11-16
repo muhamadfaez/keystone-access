@@ -1,20 +1,14 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, KeyRound, Users, BarChart3, Settings, PanelLeft, PanelRight, ClipboardCheck, KeySquare, History, DoorOpen } from "lucide-react";
+import { Home, KeyRound, Users, BarChart3, Settings, ClipboardCheck, KeySquare, History, DoorOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar,
 } from "@/components/ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Skeleton } from "./ui/skeleton";
 import { AppLogo } from "./layout/AppLogo";
 import { useAuthStore } from "@/stores/authStore";
 const navItems = [
@@ -28,22 +22,13 @@ const navItems = [
   { href: "/log", label: "Transaction Log", icon: History, adminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings, adminOnly: true },
 ];
-const getInitials = (name: string) => {
-  if (!name) return 'AU';
-  const names = name.split(' ');
-  if (names.length > 1) {
-    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
-  const { toggleSidebar, state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
-  const isMobile = useIsMobile();
   const user = useAuthStore((state) => state.user);
   const filteredNavItems = navItems.filter(item => {
     if (item.adminOnly && user?.role !== 'admin') return false;
+    // Business Rule: "My Keys" is a user-centric view and is not relevant for admins
+    // who manage the entire inventory. Hiding it simplifies the admin interface.
     if (item.href === '/my-keys' && user?.role === 'admin') return false;
     return true;
   });
@@ -73,41 +58,6 @@ export function AppSidebar(): JSX.Element {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      {!isMobile && (
-        <SidebarFooter className="flex flex-col items-start gap-4 border-t-0 p-4">
-          <div className="flex items-center justify-between w-full group-data-[state=collapsed]:justify-center">
-            <NavLink to="/profile" className="flex items-center gap-2 rounded-md p-1 -m-1 hover:bg-accent transition-colors flex-1 min-w-0 group-data-[state=collapsed]:hidden">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" alt="User avatar" />
-                <AvatarFallback>
-                  {user ? getInitials(user.name) : <Skeleton className="h-8 w-8 rounded-full" />}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col group-data-[state=collapsed]:hidden min-w-0">
-                {!user ? (
-                  <div className="space-y-1">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                ) : (
-                  <>
-                    <span className="text-sm font-medium truncate">{user.name}</span>
-                    <span className="text-xs text-muted-foreground capitalize">{user.role}</span>
-                  </>
-                )}
-              </div>
-            </NavLink>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 flex-shrink-0"
-              onClick={toggleSidebar}
-            >
-              {isCollapsed ? <PanelRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-            </Button>
-          </div>
-        </SidebarFooter>
-      )}
     </Sidebar>
   );
 }
