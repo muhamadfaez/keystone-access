@@ -141,32 +141,33 @@ interface MenuItemProps extends NavLinkProps {
 const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
   ({ className, tooltip, children, ...props }, ref) => {
     const { isCollapsed } = useSidebar();
-    const link = (
-      <NavLink
-        {...props}
-        className={({ isActive }) =>
-          cn(
-            menuItemVariants({ isCollapsed }),
-            isActive && "bg-sidebar-active text-sidebar-active-foreground font-semibold hover:bg-sidebar-active/90 hover:text-sidebar-active-foreground",
-            className
-          )
-        }
-      >
-        {children}
-      </NavLink>
-    );
     return (
       <li ref={ref}>
-        {isCollapsed && tooltip ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{link}</TooltipTrigger>
-            <TooltipContent side="right" align="center">
-              <p>{tooltip}</p>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          link
-        )}
+        <NavLink
+          {...props}
+          className={({ isActive }) =>
+            cn(
+              menuItemVariants({ isCollapsed }),
+              isActive && "bg-sidebar-active text-sidebar-active-foreground font-semibold hover:bg-sidebar-active/90 hover:text-sidebar-active-foreground",
+              className
+            )
+          }
+        >
+          {({ isActive }) => (
+            isCollapsed && tooltip ? (
+              <Tooltip>
+                <TooltipTrigger className="h-full w-full">
+                  <MenuButton isActive={isActive}>{children}</MenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center">
+                  <p>{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <MenuButton isActive={isActive}>{children}</MenuButton>
+            )
+          )}
+        </NavLink>
       </li>
     );
   }
@@ -177,23 +178,17 @@ const MenuButton = ({ children, isActive }: { children: React.ReactNode, isActiv
   let icon: React.ReactNode = null;
   const text: React.ReactNode[] = [];
 
-  const processChildren = (nodes: React.ReactNode) => {
-    React.Children.forEach(nodes, (child) => {
-      if (React.isValidElement(child)) {
-        if (!icon && child.type !== React.Fragment) {
-          icon = child;
-        } else if (child.type === React.Fragment) {
-          processChildren(child.props.children);
-        } else {
-          text.push(child);
-        }
-      } else if (typeof child === 'string' || typeof child === 'number') {
+  React.Children.forEach(children, (child) => {
+    if (React.isValidElement(child) && typeof child.type !== 'string' && (child.type.displayName?.includes('Icon') || child.props.className?.includes('lucide'))) {
+      if (!icon) {
+        icon = child;
+      } else {
         text.push(child);
       }
-    });
-  };
-
-  processChildren(children);
+    } else {
+      text.push(child);
+    }
+  });
 
   return (
     <>
