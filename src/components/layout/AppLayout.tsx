@@ -14,8 +14,8 @@ export function AppLayout({ children, container = false, className, contentClass
     <SidebarProvider>
       <div className={cn("relative min-h-screen bg-background", className)}>
         <AppSidebar />
+        <TopNavbar />
         <Sidebar.MainContent>
-          <TopNavbar />
           {container ? (
             <div className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12", contentClassName)}>
               {children}

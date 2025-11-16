@@ -204,7 +204,7 @@ const MainContent = ({ className, children }: { className?: string; children: Re
   return (
     <main
       className={cn(
-        "flex-1 transition-all duration-300 ease-in-out",
+        "flex-1 transition-all duration-300 ease-in-out pt-16",
         !isMobile && (isCollapsed ? "ml-16" : "ml-72"),
         className
       )}
