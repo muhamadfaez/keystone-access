@@ -1,14 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, KeyRound, Users, BarChart3, Settings, ClipboardCheck, KeySquare, History, DoorOpen } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
+import { Sidebar, useSidebar } from "@/components/ui/sidebar";
 import { AppLogo } from "./layout/AppLogo";
 import { useAuthStore } from "@/stores/authStore";
 const navItems = [
@@ -25,6 +18,7 @@ const navItems = [
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
+  const { isCollapsed } = useSidebar();
   const filteredNavItems = navItems.filter(item => {
     if (item.adminOnly && user?.role !== 'admin') return false;
     // Business Rule: "My Keys" is a user-centric view and is not relevant for admins
@@ -33,31 +27,34 @@ export function AppSidebar(): JSX.Element {
     return true;
   });
   return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader>
-        <div className="flex items-center gap-2.5">
-          <AppLogo className="h-8 w-8 text-primary" />
-          <span className="text-lg font-semibold font-display tracking-tight group-data-[state=collapsed]:hidden">KeyTrack</span>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
+    <Sidebar.Root>
+      <Sidebar.Header>
+        <AppLogo className="h-8 w-8 text-primary" />
+        {!isCollapsed && (
+          <span className="ml-3 text-lg font-semibold font-display tracking-tight">
+            KeyTrack
+          </span>
+        )}
+      </Sidebar.Header>
+      <Sidebar.Content>
+        <Sidebar.Menu>
           {filteredNavItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={location.pathname === item.href}
-                tooltip={item.label}
-              >
-                <NavLink to={item.href}>
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <Sidebar.MenuItem
+              key={item.href}
+              as={NavLink}
+              // @ts-ignore NavLink props are compatible
+              to={item.href}
+              isActive={location.pathname === item.href}
+              tooltip={item.label}
+            >
+              <Sidebar.MenuButton>
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
           ))}
-        </SidebarMenu>
-      </SidebarContent>
-    </Sidebar>
+        </Sidebar.Menu>
+      </Sidebar.Content>
+    </Sidebar.Root>
   );
 }

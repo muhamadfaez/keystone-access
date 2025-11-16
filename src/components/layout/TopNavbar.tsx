@@ -1,13 +1,13 @@
 import React from 'react';
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import { Notifications } from "./Notifications";
 import { UserNav } from "./UserNav";
 import { ThemeToggle } from '../ThemeToggle';
 export function TopNavbar() {
   return (
-    <header className="fixed top-0 right-0 left-0 z-40 border-b bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-sm">
       <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
-        <SidebarTrigger />
+        <Sidebar.Trigger />
         <div className="flex-1" />
         <div className="flex items-center space-x-2">
           <Notifications />
