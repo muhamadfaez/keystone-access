@@ -1,24 +1,34 @@
-import { useState, useEffect } from 'react';
-
+import { useEffect } from 'react';
+import { useThemeStore } from '@/stores/themeStore';
 export function useTheme() {
-  const [isDark, setIsDark] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
+  const theme = useThemeStore((state) => state.theme);
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const setTheme = useThemeStore((state) => state.setTheme);
+  const setColorScheme = useThemeStore((state) => state.setColorScheme);
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+    const root = window.document.documentElement;
+    // Handle color scheme
+    root.classList.remove('theme-iium');
+    if (colorScheme === 'iium') {
+      root.classList.add('theme-iium');
     }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-  };
-
-  return { isDark, toggleTheme };
+    // Handle theme (light/dark/system)
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      if (theme === 'system') {
+        root.classList.toggle('dark', e.matches);
+      }
+    };
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    if (theme === 'system') {
+      root.classList.toggle('dark', mediaQuery.matches);
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else {
+      root.classList.toggle('dark', theme === 'dark');
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    }
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
+  }, [theme, colorScheme]);
+  return { theme, colorScheme, setTheme, setColorScheme };
 }
