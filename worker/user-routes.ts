@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { KeyEntity, KeyAssignmentEntity, NotificationEntity, UserProfileEntity, KeyRequestEntity, UserEntity, RoomEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, ReportSummary, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment, AuthUser, PopulatedAssignment, StatusDistributionItem, Room } from "@shared/types";
+import { Key, ReportSummary, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment, AuthUser, PopulatedAssignment, StatusDistributionItem, Room, KeyTypeDistributionItem } from "@shared/types";
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
   const activeAssignments = assignments.items.filter((a) => !a.returnDate);
@@ -101,6 +101,18 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
       keysAvailable,
       overdueKeys
     });
+  });
+  app.get('/api/stats/key-types', async (c) => {
+    const allKeys = (await KeyEntity.list(c.env)).items;
+    const typeDistribution = allKeys.reduce((acc, key) => {
+      acc[key.keyType] = (acc[key.keyType] || 0) + key.totalQuantity;
+      return acc;
+    }, {} as Record<string, number>);
+    const formattedData: KeyTypeDistributionItem[] = Object.entries(typeDistribution).map(([name, value]) => ({
+      name,
+      value,
+    }));
+    return ok(c, formattedData);
   });
   app.get('/api/assignments/recent', async (c) => {
     const userId = c.req.query('userId');

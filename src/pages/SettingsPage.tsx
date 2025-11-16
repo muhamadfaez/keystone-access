@@ -56,7 +56,7 @@ export function SettingsPage() {
               <AppearanceSettings />
               <LogoSettings />
               <NotificationSettings />
-              <Card>
+              <Card className="transition-colors hover:bg-muted/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <LogIn className="h-5 w-5 text-muted-foreground" />
@@ -82,7 +82,7 @@ export function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-destructive lg:col-start-3">
+              <Card className="border-destructive lg:col-start-3 transition-colors hover:bg-muted/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-destructive" />

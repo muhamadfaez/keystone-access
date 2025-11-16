@@ -76,6 +76,10 @@ export type StatusDistributionItem = {
   name: 'Available' | 'Issued';
   value: number;
 };
+export type KeyTypeDistributionItem = {
+  name: string;
+  value: number;
+};
 export type DepartmentActivityItem = {
   name: string;
   keys: number;
