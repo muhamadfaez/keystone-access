@@ -30,6 +30,7 @@ const userSchema = z.object({
   email: z.string().email("Invalid email address"),
   department: z.string().min(1, "Department is required"),
   phone: z.string().optional(),
+  roomNumber: z.string().optional(),
   role: z.enum(['user', 'admin']),
 });
 type EditUserDialogProps = {
@@ -45,12 +46,16 @@ export function EditUserDialog({ isOpen, onOpenChange, userData }: EditUserDialo
       email: userData.email,
       department: userData.department,
       phone: userData.phone,
+      roomNumber: userData.roomNumber,
       role: userData.role,
     },
   });
   useEffect(() => {
     if (userData) {
-      form.reset(userData);
+      form.reset({
+        ...userData,
+        roomNumber: userData.roomNumber || '',
+      });
     }
   }, [userData, form]);
   const updateUserMutation = useApiMutation<User, Partial<User>>(
@@ -126,6 +131,19 @@ export function EditUserDialog({ isOpen, onOpenChange, userData }: EditUserDialo
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="roomNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Room / Area</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Room 205, Building A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

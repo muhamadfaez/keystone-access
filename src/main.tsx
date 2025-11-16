@@ -23,6 +23,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { KeyRequestsPage } from './pages/KeyRequestsPage';
 import { MyKeysPage } from './pages/MyKeysPage';
 import { TransactionLogPage } from './pages/TransactionLogPage';
+import { RoomsPage } from './pages/RoomsPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
       {
         path: "log",
         element: <TransactionLogPage />,
+      },
+      {
+        path: "rooms",
+        element: <RoomsPage />,
       },
       {
         path: "settings",

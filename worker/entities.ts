@@ -1,5 +1,5 @@
 import { Entity, IndexedEntity } from "./core-utils";
-import type { Key, KeyAssignment, Notification, UserProfile, KeyRequest, User } from "@shared/types";
+import type { Key, KeyAssignment, Notification, UserProfile, KeyRequest, User, Room } from "@shared/types";
 // KEY ENTITY
 export class KeyEntity extends IndexedEntity<Key> {
   static readonly entityName = "key";
@@ -72,6 +72,7 @@ export class UserEntity extends IndexedEntity<User> {
     phone: "",
     password: "", // In a real app, this would be a hash
     role: "user",
+    roomNumber: "",
   };
   static readonly seedData: ReadonlyArray<User> = [
     {
@@ -82,6 +83,7 @@ export class UserEntity extends IndexedEntity<User> {
       phone: "123-456-7890",
       password: "password",
       role: "admin",
+      roomNumber: "Admin Office",
     },
     {
       id: "iium-admin-seed",
@@ -91,6 +93,17 @@ export class UserEntity extends IndexedEntity<User> {
       phone: "012-345-6789",
       password: "faez123",
       role: "admin",
+      roomNumber: "KICT Building",
     },
   ];
+}
+// ROOM ENTITY
+export class RoomEntity extends IndexedEntity<Room> {
+  static readonly entityName = "room";
+  static readonly indexName = "rooms";
+  static readonly initialState: Room = {
+    id: "",
+    roomNumber: "",
+    description: "",
+  };
 }

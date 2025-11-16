@@ -61,9 +61,16 @@ export interface User {
   department: string;
   phone: string;
   role: 'admin' | 'user';
+  roomNumber?: string;
   password?: string; // Only on backend
 }
 export type AuthUser = Omit<User, 'password'>;
+// --- Room Type ---
+export interface Room {
+  id: string;
+  roomNumber: string;
+  description?: string;
+}
 // --- Reporting Types ---
 export type StatusDistributionItem = {
   name: 'Available' | 'Issued';

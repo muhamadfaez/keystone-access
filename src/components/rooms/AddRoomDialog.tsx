@@ -20,38 +20,33 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useApi, useApiMutation } from '@/hooks/useApi';
+import { useApiMutation } from '@/hooks/useApi';
 import { api } from '@/lib/api-client';
-import { Room, Key } from '@shared/types';
+import { Room } from '@shared/types';
 import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 const roomSchema = z.object({
   roomNumber: z.string().min(1, "Room number is required"),
   description: z.string().optional(),
-  keyId: z.string().optional(),
 });
 type AddRoomDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 };
 export function AddRoomDialog({ isOpen, onOpenChange }: AddRoomDialogProps) {
-  const { data: keysData, isLoading: isLoadingKeys } = useApi<{ items: Key[] }>(['keys']);
   const form = useForm<z.infer<typeof roomSchema>>({
     resolver: zodResolver(roomSchema),
     defaultValues: {
       roomNumber: "",
       description: "",
-      keyId: "none",
     },
   });
-  const createRoomMutation = useApiMutation<Room, Partial<Room> & { keyId?: string }>(
+  const createRoomMutation = useApiMutation<Room, Partial<Room>>(
     (newRoom) => api('/api/rooms', { method: 'POST', body: JSON.stringify(newRoom) }),
-    [['rooms'], ['keys']]
+    [['rooms']]
   );
   const onSubmit = (values: z.infer<typeof roomSchema>) => {
-    const finalValues = { ...values, keyId: values.keyId === 'none' ? undefined : values.keyId };
-    createRoomMutation.mutate(finalValues, {
+    createRoomMutation.mutate(values, {
       onSuccess: (data) => {
         toast.success(`Room "${data.roomNumber}" created successfully!`);
         form.reset();
@@ -95,31 +90,6 @@ export function AddRoomDialog({ isOpen, onOpenChange }: AddRoomDialogProps) {
                   <FormControl>
                     <Textarea placeholder="e.g., Located on the first floor, west wing." {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="keyId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Associate Key (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isLoadingKeys ? "Loading keys..." : "Select a key to associate"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {keysData?.items.map((key) => (
-                        <SelectItem key={key.id} value={key.id}>
-                          {key.keyNumber} ({key.roomNumber || 'No room assigned'})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

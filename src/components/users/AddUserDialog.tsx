@@ -30,6 +30,7 @@ const userSchema = z.object({
   email: z.string().email("Invalid email address"),
   department: z.string().min(1, "Department is required"),
   phone: z.string().optional(),
+  roomNumber: z.string().optional(),
   role: z.enum(['user', 'admin']),
 });
 type AddUserDialogProps = {
@@ -44,6 +45,7 @@ export function AddUserDialog({ isOpen, onOpenChange }: AddUserDialogProps) {
       email: "",
       department: "",
       phone: "",
+      roomNumber: "",
       role: "user",
     },
   });
@@ -121,6 +123,19 @@ export function AddUserDialog({ isOpen, onOpenChange }: AddUserDialogProps) {
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., 123-456-7890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="roomNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Room / Area</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Room 205, Building A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

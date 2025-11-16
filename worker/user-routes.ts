@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { KeyEntity, KeyAssignmentEntity, NotificationEntity, UserProfileEntity, KeyRequestEntity, UserEntity } from "./entities";
+import { KeyEntity, KeyAssignmentEntity, NotificationEntity, UserProfileEntity, KeyRequestEntity, UserEntity, RoomEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import { Key, ReportSummary, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment, AuthUser, PopulatedAssignment, StatusDistributionItem } from "@shared/types";
+import { Key, ReportSummary, OverdueKeyInfo, Notification, UserProfile, KeyRequest, User, KeyAssignment, AuthUser, PopulatedAssignment, StatusDistributionItem, Room } from "@shared/types";
 async function checkAndUpdateOverdueKeys(env: Env) {
   const assignments = await KeyAssignmentEntity.list(env);
   const activeAssignments = assignments.items.filter((a) => !a.returnDate);
@@ -359,7 +359,8 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
       department: body.department,
       email: body.email,
       phone: body.phone || '',
-      role: body.role || 'user'
+      role: body.role || 'user',
+      roomNumber: body.roomNumber || '',
     };
     return ok(c, await UserEntity.create(c.env, newUser));
   });
@@ -386,6 +387,7 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
       email: body.email,
       phone: body.phone,
       role: body.role,
+      roomNumber: body.roomNumber,
       password: existingUser.password
     });
     const updatedUser = await user.getState();
@@ -558,5 +560,46 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     };
     await NotificationEntity.create(c.env, newNotification);
     return ok(c, await requestEntity.getState());
+  });
+  // --- ROOM ROUTES ---
+  app.get('/api/rooms', async (c) => {
+    return ok(c, await RoomEntity.list(c.env));
+  });
+  app.post('/api/rooms', async (c) => {
+    const body = await c.req.json<Partial<Room>>();
+    if (!isStr(body.roomNumber)) {
+      return bad(c, 'roomNumber is required');
+    }
+    const newRoom: Room = {
+      id: crypto.randomUUID(),
+      roomNumber: body.roomNumber,
+      description: body.description || '',
+    };
+    return ok(c, await RoomEntity.create(c.env, newRoom));
+  });
+  app.get('/api/rooms/:id', async (c) => {
+    const id = c.req.param('id');
+    const room = new RoomEntity(c.env, id);
+    if (!(await room.exists())) {
+      return notFound(c, 'Room not found');
+    }
+    return ok(c, await room.getState());
+  });
+  app.put('/api/rooms/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<Room>>();
+    const room = new RoomEntity(c.env, id);
+    if (!(await room.exists())) return notFound(c, 'Room not found');
+    await room.patch({
+      roomNumber: body.roomNumber,
+      description: body.description,
+    });
+    return ok(c, await room.getState());
+  });
+  app.delete('/api/rooms/:id', async (c) => {
+    const id = c.req.param('id');
+    const existed = await RoomEntity.delete(c.env, id);
+    if (!existed) return notFound(c, 'Room not found');
+    return ok(c, { id });
   });
 }

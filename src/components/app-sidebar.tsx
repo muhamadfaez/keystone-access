@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, KeyRound, Users, BarChart3, Settings, PanelLeft, PanelRight, Zap, ClipboardCheck, KeySquare, History } from "lucide-react";
+import { Home, KeyRound, Users, BarChart3, Settings, PanelLeft, PanelRight, ClipboardCheck, KeySquare, History, DoorOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,6 +22,7 @@ const navItems = [
   { href: "/keys", label: "Key Inventory", icon: KeyRound, adminOnly: true },
   { href: "/my-keys", label: "My Keys", icon: KeySquare, adminOnly: false },
   { href: "/users", label: "Users", icon: Users, adminOnly: true },
+  { href: "/rooms", label: "Rooms", icon: DoorOpen, adminOnly: true },
   { href: "/requests", label: "Key Requests", icon: ClipboardCheck, adminOnly: false },
   { href: "/reports", label: "Reports", icon: BarChart3, adminOnly: true },
   { href: "/log", label: "Transaction Log", icon: History, adminOnly: true },
@@ -42,7 +42,11 @@ export function AppSidebar(): JSX.Element {
   const isCollapsed = state === 'collapsed';
   const isMobile = useIsMobile();
   const user = useAuthStore((state) => state.user);
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'admin');
+  const filteredNavItems = navItems.filter(item => {
+    if (item.adminOnly && user?.role !== 'admin') return false;
+    if (item.href === '/my-keys' && user?.role === 'admin') return false;
+    return true;
+  });
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
