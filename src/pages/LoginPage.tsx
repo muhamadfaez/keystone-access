@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { AppLogo } from '@/components/layout/AppLogo';
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
@@ -53,7 +54,7 @@ export function LoginPage() {
       <div className="absolute inset-0 bg-gradient-mesh opacity-10 dark:opacity-20" />
       <div className="relative z-10 flex flex-col items-center space-y-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Lock className="h-7 w-7" />
+          <AppLogo className="h-8 w-8 text-primary-foreground" />
         </div>
         <h1 className="text-3xl font-bold font-display tracking-tight">
           KeyTrack

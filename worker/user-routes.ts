@@ -109,7 +109,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await PersonnelEntity.deleteMany(c.env, allPersonnel.items.map(p => p.id));
     await KeyAssignmentEntity.deleteMany(c.env, allAssignments.items.map(a => a.id));
     await NotificationEntity.deleteMany(c.env, allNotifications.items.map(n => n.id));
+    // Also reset profile logo
+    const profile = new UserProfileEntity(c.env, 'main');
+    if (await profile.exists()) {
+      await profile.patch({ appLogoBase64: null });
+    }
     return ok(c, { message: 'All data cleared successfully.' });
+  });
+  app.put('/api/settings/logo', async (c) => {
+    const body = await c.req.json<{ logo: string | null }>();
+    const profile = new UserProfileEntity(c.env, 'main');
+    if (!(await profile.exists())) {
+      return notFound(c, 'Profile not found');
+    }
+    await profile.patch({ appLogoBase64: body.logo });
+    return ok(c, await profile.getState());
   });
   // --- NOTIFICATIONS ---
   app.get('/api/notifications', async (c) => {

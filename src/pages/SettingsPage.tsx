@@ -12,13 +12,14 @@ import { NotificationSettings } from '@/components/settings/NotificationSettings
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { LogoSettings } from '@/components/settings/LogoSettings';
 export function SettingsPage() {
   const [isResetDialogOpen, setResetDialogOpen] = useState(false);
   const enableGoogleAuth = useSettingsStore((state) => state.auth.enableGoogleAuth);
   const toggleGoogleAuth = useSettingsStore((state) => state.toggleGoogleAuth);
   const resetMutation = useApiMutation<void, void>(
     () => api('/api/settings/reset', { method: 'POST' }),
-    [['keys'], ['personnel'], ['assignments'], ['stats'], ['reports', 'summary'], ['assignments', 'recent'], ['notifications']]
+    [['keys'], ['personnel'], ['assignments'], ['stats'], ['reports', 'summary'], ['assignments', 'recent'], ['notifications'], ['profile']]
   );
   const handleReset = () => {
     resetMutation.mutate(undefined, {
@@ -45,6 +46,7 @@ export function SettingsPage() {
               subtitle="Manage application settings and preferences."
             />
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <LogoSettings />
               <NotificationSettings />
               <Card>
                 <CardHeader>
@@ -72,7 +74,7 @@ export function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-destructive">
+              <Card className="border-destructive lg:col-start-3">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-destructive" />

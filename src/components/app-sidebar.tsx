@@ -13,13 +13,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HorizonLogo } from "./icons/HorizonLogo";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useApi } from "@/hooks/useApi";
 import { UserProfile } from "@shared/types";
 import { Skeleton } from "./ui/skeleton";
+import { AppLogo } from "./layout/AppLogo";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/keys", label: "Key Inventory", icon: KeyRound },
@@ -44,7 +44,7 @@ export function AppSidebar(): JSX.Element {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2.5">
-          <HorizonLogo className="h-8 w-8" />
+          <AppLogo className="h-8 w-8 text-primary" />
           <span className="text-lg font-semibold font-display tracking-tight group-data-[state=collapsed]:hidden">KeyTrack</span>
         </div>
       </SidebarHeader>
