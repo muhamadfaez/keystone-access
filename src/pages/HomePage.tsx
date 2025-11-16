@@ -4,12 +4,14 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, Users, AlertTriangle, CheckCircle } from "lucide-react";
-import { PopulatedAssignment } from "@shared/types";
+import { KeyRound, Users, AlertTriangle, CheckCircle, ClipboardCheck } from "lucide-react";
+import { PopulatedAssignment, PopulatedKeyRequest } from "@shared/types";
 import { format } from "date-fns";
 import { useApi } from "@/hooks/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/stores/authStore";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 type DashboardStats = {
   totalKeys: number;
   keysIssued: number;
@@ -23,6 +25,8 @@ export function HomePage() {
   const recentAssignmentsPath = isUserView ? `assignments/recent?userId=${user?.id}` : 'assignments/recent';
   const { data: stats, isLoading: isLoadingStats } = useApi<DashboardStats>([statsPath]);
   const { data: recentAssignments, isLoading: isLoadingAssignments } = useApi<PopulatedAssignment[]>([recentAssignmentsPath]);
+  const { data: keyRequests, isLoading: isLoadingRequests } = useApi<PopulatedKeyRequest[]>(['requests'], { enabled: !isUserView });
+  const pendingRequests = keyRequests?.filter(req => req.status === 'Pending').slice(0, 5) || [];
   const pageTitle = isUserView ? "My Dashboard" : "Dashboard";
   const pageSubtitle = isUserView
     ? "Here's an overview of your assigned keys."
@@ -75,7 +79,7 @@ export function HomePage() {
               </>
             )}
           </div>
-          <div className="mt-12">
+          <div className="mt-12 grid gap-12 lg:grid-cols-2 lg:gap-8">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -116,7 +120,7 @@ export function HomePage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                           No recent activity.
                         </TableCell>
                       </TableRow>
@@ -125,6 +129,40 @@ export function HomePage() {
                 </Table>
               </CardContent>
             </Card>
+            {!isUserView && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Recent Key Requests</CardTitle>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/requests">View All</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {isLoadingRequests ? (
+                      Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)
+                    ) : pendingRequests.length > 0 ? (
+                      pendingRequests.map((request) => (
+                        <div key={request.id} className="flex items-center">
+                          <ClipboardCheck className="h-5 w-5 text-muted-foreground mr-4" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{request.requestedKeyInfo}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Requested by {request.user.name}
+                            </p>
+                          </div>
+                          <Badge variant="default">Pending</Badge>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-muted-foreground py-8">
+                        No pending key requests.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
