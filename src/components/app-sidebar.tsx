@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, KeyRound, Users, BarChart3, Settings, Lock, PanelLeft, PanelRight } from "lucide-react";
+import { Home, KeyRound, Users, BarChart3, Settings, PanelLeft, PanelRight, Zap } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +13,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HorizonLogo } from "./icons/HorizonLogo";
+import { Card, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useApi } from "@/hooks/useApi";
+import { UserProfile } from "@shared/types";
+import { Skeleton } from "./ui/skeleton";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/keys", label: "Key Inventory", icon: KeyRound },
@@ -20,19 +27,25 @@ const navItems = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
+const getInitials = (name: string) => {
+  const names = name.split(' ');
+  if (names.length > 1) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const { toggleSidebar, state } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const isMobile = useIsMobile();
+  const { data: userProfile, isLoading } = useApi<UserProfile>(['profile']);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Lock className="h-5 w-5" />
-          </div>
-          <span className="text-lg font-semibold font-display tracking-tight group-data-[state=collapsed]:hidden">Keystone Access</span>
+          <HorizonLogo className="h-8 w-8" />
+          <span className="text-lg font-semibold font-display tracking-tight group-data-[state=collapsed]:hidden">Keystone</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -54,19 +67,49 @@ export function AppSidebar(): JSX.Element {
         </SidebarMenu>
       </SidebarContent>
       {!isMobile && (
-        <SidebarFooter className="flex flex-col items-start gap-2 border-t border-sidebar-border p-2">
+        <SidebarFooter className="flex flex-col items-start gap-4 border-t-0 p-4">
+          <div className="w-full group-data-[state=collapsed]:hidden">
+            <Card className="bg-primary/5 dark:bg-primary/10 border-primary/20">
+              <CardContent className="p-3 text-center">
+                <Zap className="mx-auto h-6 w-6 text-primary mb-2" />
+                <p className="text-sm font-semibold">Upgrade to PRO</p>
+                <p className="text-xs text-muted-foreground mb-3">Unlock all features</p>
+                <Button size="sm" className="w-full">Upgrade</Button>
+              </CardContent>
+            </Card>
+          </div>
           <SidebarSeparator />
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={toggleSidebar}
-                tooltip={isCollapsed ? "Expand" : "Collapse"}
-              >
-                {isCollapsed ? <PanelRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-                <span className="group-data-[state=collapsed]:hidden">{isCollapsed ? "Expand" : "Collapse"}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder-user.jpg" alt="User avatar" />
+                <AvatarFallback>
+                  {isLoading ? <Skeleton className="h-8 w-8 rounded-full" /> : userProfile ? getInitials(userProfile.name) : 'AU'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col group-data-[state=collapsed]:hidden">
+                {isLoading ? (
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-sm font-medium">{userProfile?.name || 'Admin User'}</span>
+                    <span className="text-xs text-muted-foreground">PRO Member</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={toggleSidebar}
+            >
+              {isCollapsed ? <PanelRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
+            </Button>
+          </div>
         </SidebarFooter>
       )}
     </Sidebar>
