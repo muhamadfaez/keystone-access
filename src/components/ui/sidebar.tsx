@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Menu } from "lucide-react";
+import { Menu as MenuIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -138,20 +138,20 @@ const menuItemVariants = cva(
     },
   }
 );
-interface MenuItemProps extends React.ComponentProps<"a">, VariantProps<typeof menuItemVariants> {
+interface MenuItemProps extends React.ComponentProps<"li">, Omit<VariantProps<typeof menuItemVariants>, 'isCollapsed'> {
   tooltip?: string;
   children: React.ReactNode;
 }
-const MenuItem = React.forwardRef<HTMLLIElement, Omit<MenuItemProps, "isCollapsed"> & { asChild?: boolean }>(
-  ({ className, isActive, tooltip, children, asChild, ...props }, ref) => {
+const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
+  ({ className, isActive, tooltip, children, ...props }, ref) => {
     const { isCollapsed } = useSidebar();
     const link = (
-      <a className={cn(menuItemVariants({ isCollapsed, isActive }), className)} {...props}>
+      <div className={cn(menuItemVariants({ isCollapsed, isActive }), className)}>
         {children}
-      </a>
+      </div>
     );
     return (
-      <li ref={ref}>
+      <li ref={ref} {...props}>
         {isCollapsed && tooltip ? (
           <Tooltip>
             <TooltipTrigger asChild>{link}</TooltipTrigger>
@@ -193,7 +193,7 @@ const Trigger = ({ className, ...props }: React.ComponentProps<typeof Button>) =
       onClick={() => (isMobile ? setIsMobileOpen(!isMobileOpen) : toggleCollapse())}
       {...props}
     >
-      <Menu className="h-5 w-5" />
+      <MenuIcon className="h-5 w-5" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

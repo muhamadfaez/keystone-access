@@ -39,19 +39,17 @@ export function AppSidebar(): JSX.Element {
       <Sidebar.Content>
         <Sidebar.Menu>
           {filteredNavItems.map((item) => (
-            <Sidebar.MenuItem
-              key={item.href}
-              as={NavLink}
-              // @ts-ignore NavLink props are compatible
-              to={item.href}
-              isActive={location.pathname === item.href}
-              tooltip={item.label}
-            >
-              <Sidebar.MenuButton>
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
+            <NavLink to={item.href} key={item.href} className="block">
+              <Sidebar.MenuItem
+                isActive={location.pathname === item.href}
+                tooltip={item.label}
+              >
+                <Sidebar.MenuButton>
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            </NavLink>
           ))}
         </Sidebar.Menu>
       </Sidebar.Content>
