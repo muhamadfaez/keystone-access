@@ -27,8 +27,8 @@ import { Input } from '../ui/input';
 import { EditRoomDialog } from './EditRoomDialog';
 import { DeleteDialog } from '../keys/DeleteDialog';
 export function RoomDataTable() {
-  const { data: roomsData, isLoading: isLoadingRooms } = useApi<{ items: Room[] }>(['rooms']);
-  const { data: keysData, isLoading: isLoadingKeys } = useApi<{ items: Key[] }>(['keys']);
+  const { data: roomsData, isLoading: isLoadingRooms, error: roomsError } = useApi<{ items: Room[] }>(['rooms']);
+  const { data: keysData, isLoading: isLoadingKeys, error: keysError } = useApi<{ items: Key[] }>(['keys']);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogState, setDialogState] = useState<{
     edit?: Room;
@@ -76,11 +76,12 @@ export function RoomDataTable() {
         </TableRow>
       ));
     }
+    const error = roomsError || keysError;
     if (error) {
       return (
         <TableRow>
           <TableCell colSpan={3} className="text-center text-destructive">
-            Error loading rooms: {error.message}
+            Error loading data: {error.message}
           </TableCell>
         </TableRow>
       );
