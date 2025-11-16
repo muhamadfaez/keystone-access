@@ -27,7 +27,7 @@ export function KeyInventoryPage() {
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-8 md:py-10 lg:py-12">
+        <div className="py-6 md:py-8">
           <PageHeader
             title="Key Inventory"
             subtitle="Manage all keys in the university system."
@@ -39,14 +39,14 @@ export function KeyInventoryPage() {
               </Button>
             )}
           </PageHeader>
-          <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-4">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 mb-6">
             <Input
               placeholder="Search keys..."
               className="w-full md:max-w-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="flex items-center space-x-4 w-full md:w-auto">
+            <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium">Status:</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>

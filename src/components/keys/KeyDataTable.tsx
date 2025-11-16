@@ -169,8 +169,9 @@ export function KeyDataTable({ statusFilter, typeFilter, searchTerm }: KeyDataTa
     if (filteredKeys.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7}>
+          <TableCell colSpan={7} className="p-0">
             <EmptyState
+              className="h-96"
               icon={<Inbox className="h-12 w-12" />}
               title="No Keys Found"
               description="No keys match your current search or filter criteria. Try adding a new key."
