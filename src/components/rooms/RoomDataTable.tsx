@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Inbox } from "lucide-react";
-import { Room, Key } from "@shared/types";
+import { Room, Key, User } from "@shared/types";
 import { Card, CardContent } from '../ui/card';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { api } from '@/lib/api-client';
@@ -29,6 +29,7 @@ import { DeleteDialog } from '../keys/DeleteDialog';
 export function RoomDataTable() {
   const { data: roomsData, isLoading: isLoadingRooms, error: roomsError } = useApi<{ items: Room[] }>(['rooms']);
   const { data: keysData, isLoading: isLoadingKeys, error: keysError } = useApi<{ items: Key[] }>(['keys']);
+  const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useApi<{ items: User[] }>(['users']);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogState, setDialogState] = useState<{
     edit?: Room;
@@ -46,6 +47,18 @@ export function RoomDataTable() {
       return acc;
     }, new Map<string, Key[]>());
   }, [keysData]);
+  const usersByRoom = useMemo(() => {
+    if (!usersData?.items) return new Map<string, User[]>();
+    return usersData.items.reduce((acc, user) => {
+      if (user.roomNumber) {
+        if (!acc.has(user.roomNumber)) {
+          acc.set(user.roomNumber, []);
+        }
+        acc.get(user.roomNumber)!.push(user);
+      }
+      return acc;
+    }, new Map<string, User[]>());
+  }, [usersData]);
   const filteredRooms = useMemo(() => {
     if (!roomsData?.items) return [];
     return roomsData.items.filter(room =>
@@ -69,18 +82,18 @@ export function RoomDataTable() {
     });
   };
   const renderContent = () => {
-    if (isLoadingRooms || isLoadingKeys) {
+    if (isLoadingRooms || isLoadingKeys || isLoadingUsers) {
       return Array.from({ length: 5 }).map((_, i) => (
         <TableRow key={i}>
-          <TableCell colSpan={3}><Skeleton className="h-8 w-full" /></TableCell>
+          <TableCell colSpan={4}><Skeleton className="h-8 w-full" /></TableCell>
         </TableRow>
       ));
     }
-    const error = roomsError || keysError;
+    const error = roomsError || keysError || usersError;
     if (error) {
       return (
         <TableRow>
-          <TableCell colSpan={3} className="text-center text-destructive">
+          <TableCell colSpan={4} className="text-center text-destructive">
             Error loading data: {error.message}
           </TableCell>
         </TableRow>
@@ -89,7 +102,7 @@ export function RoomDataTable() {
     if (filteredRooms.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={3}>
+          <TableCell colSpan={4}>
             <EmptyState
               icon={<Inbox className="h-12 w-12" />}
               title="No Rooms Found"
@@ -101,12 +114,18 @@ export function RoomDataTable() {
     }
     return filteredRooms.map((room) => {
       const associatedKeys = keysByRoom.get(room.roomNumber) || [];
+      const assignedUsers = usersByRoom.get(room.roomNumber) || [];
       return (
         <TableRow key={room.id}>
           <TableCell className="font-medium">{room.roomNumber}</TableCell>
           <TableCell>
             {associatedKeys.length > 0
               ? associatedKeys.map(k => k.keyNumber).join(', ')
+              : 'N/A'}
+          </TableCell>
+          <TableCell>
+            {assignedUsers.length > 0
+              ? assignedUsers.map(u => u.name).join(', ')
               : 'N/A'}
           </TableCell>
           <TableCell>
@@ -151,6 +170,7 @@ export function RoomDataTable() {
                 <TableRow>
                   <TableHead>Room Number / Area</TableHead>
                   <TableHead>Associated Keys</TableHead>
+                  <TableHead>Assigned User(s)</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
