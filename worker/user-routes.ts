@@ -566,16 +566,23 @@ export function userRoutes(app: Hono<{Bindings: Env;}>) {
     return ok(c, await RoomEntity.list(c.env));
   });
   app.post('/api/rooms', async (c) => {
-    const body = await c.req.json<Partial<Room>>();
+    const body = await c.req.json<Partial<Room> & { keyId?: string }>();
     if (!isStr(body.roomNumber)) {
       return bad(c, 'roomNumber is required');
     }
-    const newRoom: Room = {
+    const newRoomData: Room = {
       id: crypto.randomUUID(),
       roomNumber: body.roomNumber,
       description: body.description || '',
     };
-    return ok(c, await RoomEntity.create(c.env, newRoom));
+    const newRoom = await RoomEntity.create(c.env, newRoomData);
+    if (isStr(body.keyId)) {
+      const key = new KeyEntity(c.env, body.keyId);
+      if (await key.exists()) {
+        await key.patch({ roomNumber: newRoom.roomNumber });
+      }
+    }
+    return ok(c, newRoom);
   });
   app.get('/api/rooms/:id', async (c) => {
     const id = c.req.param('id');
