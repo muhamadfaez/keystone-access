@@ -16,7 +16,7 @@ export function TopNavbar() {
       )}
     >
       <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
-        <Sidebar.Trigger />
+        {isMobile && <Sidebar.Trigger />}
         <div className="flex-1" />
         <div className="flex items-center space-x-2">
           <Notifications />

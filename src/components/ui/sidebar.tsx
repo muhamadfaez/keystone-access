@@ -71,7 +71,7 @@ const Root = ({ className, children }: { className?: string; children: React.Rea
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex h-svh flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
+        "fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
         isCollapsed ? "w-16" : "w-72",
         className
       )}
@@ -204,7 +204,7 @@ const MainContent = ({ className, children }: { className?: string; children: Re
   return (
     <main
       className={cn(
-        "flex-1 transition-all duration-300 ease-in-out pt-16",
+        "flex-1 transition-all duration-300 ease-in-out",
         !isMobile && (isCollapsed ? "ml-16" : "ml-72"),
         className
       )}
