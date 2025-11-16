@@ -172,7 +172,7 @@ const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
   }
 );
 MenuItem.displayName = "MenuItem";
-const MenuButton = ({ children }: { children: React.ReactNode }) => {
+const MenuButton = ({ children, isActive }: { children: React.ReactNode, isActive?: boolean }) => {
   const { isCollapsed } = useSidebar();
   let icon: React.ReactNode = null;
   const text: React.ReactNode[] = [];
@@ -198,7 +198,7 @@ const MenuButton = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       {icon}
-      {!isCollapsed && <span className="ml-3 truncate">{text}</span>}
+      {!isCollapsed && <span className={cn("ml-3 truncate", isActive && "font-semibold")}>{text}</span>}
     </>
   );
 };
