@@ -55,7 +55,7 @@ export function EditUserDialog({ isOpen, onOpenChange, userData }: EditUserDialo
     if (userData) {
       form.reset({
         ...userData,
-        roomNumber: userData.roomNumber || '',
+        roomNumber: userData.roomNumber || 'none',
       });
     }
   }, [userData, form]);
@@ -64,7 +64,11 @@ export function EditUserDialog({ isOpen, onOpenChange, userData }: EditUserDialo
     [['users']]
   );
   const onSubmit = (values: z.infer<typeof userSchema>) => {
-    updateUserMutation.mutate(values, {
+    const payload = {
+      ...values,
+      roomNumber: values.roomNumber === 'none' ? '' : values.roomNumber,
+    };
+    updateUserMutation.mutate(payload, {
       onSuccess: (data) => {
         toast.success(`User "${data.name}" updated successfully!`);
         onOpenChange(false);
@@ -143,14 +147,14 @@ export function EditUserDialog({ isOpen, onOpenChange, userData }: EditUserDialo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Room / Area</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value || 'none'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={isLoadingRooms ? "Loading rooms..." : "Select a room"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {roomsData?.items.map((room) => (
                         <SelectItem key={room.id} value={room.roomNumber}>
                           {room.roomNumber}
