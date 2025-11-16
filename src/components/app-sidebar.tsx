@@ -48,7 +48,7 @@ export function AppSidebar(): JSX.Element {
     return true;
   });
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <div className="flex items-center gap-2.5">
           <AppLogo className="h-8 w-8 text-primary" />
