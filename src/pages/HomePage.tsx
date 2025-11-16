@@ -38,25 +38,25 @@ export function HomePage() {
               <>
                 <StatCard
                   title="Total Keys"
-                  value={stats.totalKeys.toLocaleString()}
+                  value={(stats.totalKeys ?? 0).toLocaleString()}
                   icon={<KeyRound className="h-6 w-6 text-muted-foreground" />}
                   description="Total number of keys in inventory"
                 />
                 <StatCard
                   title="Keys Issued"
-                  value={stats.keysIssued.toLocaleString()}
+                  value={(stats.keysIssued ?? 0).toLocaleString()}
                   icon={<Users className="h-6 w-6 text-muted-foreground" />}
-                  description={stats.totalKeys > 0 ? `${((stats.keysIssued / stats.totalKeys) * 100).toFixed(1)}% of total keys` : "N/A"}
+                  description={(stats.totalKeys ?? 0) > 0 ? `${(((stats.keysIssued ?? 0) / (stats.totalKeys ?? 0)) * 100).toFixed(1)}% of total keys` : "N/A"}
                 />
                 <StatCard
                   title="Keys Available"
-                  value={stats.keysAvailable.toLocaleString()}
+                  value={(stats.keysAvailable ?? 0).toLocaleString()}
                   icon={<CheckCircle className="h-6 w-6 text-muted-foreground" />}
                   description="Keys ready for assignment"
                 />
                 <StatCard
                   title="Overdue Keys"
-                  value={stats.overdueKeys.toLocaleString()}
+                  value={(stats.overdueKeys ?? 0).toLocaleString()}
                   icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
                   description="Require immediate attention"
                   variant="destructive"
