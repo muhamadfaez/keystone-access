@@ -25,6 +25,7 @@ import { EmptyState } from '../layout/EmptyState';
 import { format } from 'date-fns';
 import { ApproveRequestDialog } from './ApproveRequestDialog';
 import { RejectRequestDialog } from './RejectRequestDialog';
+import { useAuthStore } from '@/stores/authStore';
 const StatusBadge = ({ status }: { status: KeyRequestStatus }) => {
   const variantMap: Record<KeyRequestStatus, BadgeProps["variant"]> = {
     Pending: "default",
@@ -37,6 +38,7 @@ type SortableKey = keyof PopulatedKeyRequest | 'personnel.name';
 type SortDirection = 'ascending' | 'descending';
 export function KeyRequestDataTable() {
   const { data: requests, isLoading, error } = useApi<PopulatedKeyRequest[]>(['requests']);
+  const user = useAuthStore((state) => state.user);
   const [sortConfig, setSortConfig] = useState<{ key: SortableKey; direction: SortDirection } | null>(null);
   const [dialogState, setDialogState] = useState<{
     approve?: PopulatedKeyRequest;
@@ -119,16 +121,20 @@ export function KeyRequestDataTable() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => setDialogState({ approve: request })} disabled={request.status !== 'Pending'}>
-                Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => setDialogState({ reject: request })}
-                disabled={request.status !== 'Pending'}
-                className="text-destructive focus:text-destructive focus:bg-destructive/10"
-              >
-                Reject
-              </DropdownMenuItem>
+              {user?.role === 'admin' && (
+                <>
+                  <DropdownMenuItem onSelect={() => setDialogState({ approve: request })} disabled={request.status !== 'Pending'}>
+                    Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => setDialogState({ reject: request })}
+                    disabled={request.status !== 'Pending'}
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  >
+                    Reject
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
