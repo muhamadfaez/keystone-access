@@ -23,10 +23,10 @@ export interface KeyAssignment {
   id: string;
   keyId: string;
   personnelId: string;
-  issueDate: string; // ISO 8061 string
+  issueDate: string; // ISO 8601 string
   assignmentType: "personal" | "event";
-  dueDate?: string;   // ISO 8061 string
-  returnDate?: string; // ISO 8061 string
+  dueDate?: string;   // ISO 8601 string
+  returnDate?: string; // ISO 8601 string
 }
 // Represents an assignment populated with the full key and personnel objects.
 export type PopulatedAssignment = KeyAssignment & {
@@ -69,6 +69,6 @@ export type ReportSummary = {
 export interface Notification {
   id: string;
   message: string;
-  timestamp: string; // ISO 8061 string
+  timestamp: string; // ISO 8601 string
   read: boolean;
 }
