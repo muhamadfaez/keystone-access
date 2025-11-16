@@ -42,7 +42,7 @@ export function AddRoomDialog({ isOpen, onOpenChange }: AddRoomDialogProps) {
     defaultValues: {
       roomNumber: "",
       description: "",
-      keyId: "",
+      keyId: "none",
     },
   });
   const createRoomMutation = useApiMutation<Room, Partial<Room> & { keyId?: string }>(
@@ -50,7 +50,8 @@ export function AddRoomDialog({ isOpen, onOpenChange }: AddRoomDialogProps) {
     [['rooms'], ['keys']]
   );
   const onSubmit = (values: z.infer<typeof roomSchema>) => {
-    createRoomMutation.mutate(values, {
+    const finalValues = { ...values, keyId: values.keyId === 'none' ? undefined : values.keyId };
+    createRoomMutation.mutate(finalValues, {
       onSuccess: (data) => {
         toast.success(`Room "${data.roomNumber}" created successfully!`);
         form.reset();
@@ -111,7 +112,7 @@ export function AddRoomDialog({ isOpen, onOpenChange }: AddRoomDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {keysData?.items.map((key) => (
                         <SelectItem key={key.id} value={key.id}>
                           {key.keyNumber} ({key.roomNumber || 'No room assigned'})
