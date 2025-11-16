@@ -38,7 +38,7 @@ export function ApproveRequestDialog({ isOpen, onOpenChange, request }: ApproveR
     // A simple filter based on the requested key info.
     // A more sophisticated system might use tags or specific properties.
     return keysData.items.filter(key =>
-      key.status === 'Available' &&
+      key.availableQuantity > 0 &&
       (key.keyNumber.toLowerCase().includes(request.requestedKeyInfo.toLowerCase()) ||
         key.roomNumber.toLowerCase().includes(request.requestedKeyInfo.toLowerCase()))
     );

@@ -52,9 +52,7 @@ export function KeyInventoryPage() {
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Issued">Issued</SelectItem>
-                    <SelectItem value="Overdue">Overdue</SelectItem>
-                    <SelectItem value="Lost">Lost</SelectItem>
+                    <SelectItem value="Issued">Fully Issued</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
