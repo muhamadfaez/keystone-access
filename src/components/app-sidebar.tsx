@@ -76,7 +76,6 @@ export function AppSidebar(): JSX.Element {
         </Sidebar.Menu>
       </Sidebar.Content>
       <Sidebar.Footer>
-        <Separator className="my-2" />
         {isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
