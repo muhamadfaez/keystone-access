@@ -175,26 +175,12 @@ const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
 MenuItem.displayName = "MenuItem";
 const MenuButton = ({ children, isActive }: { children: React.ReactNode, isActive?: boolean }) => {
   const { isCollapsed } = useSidebar();
-  let icon: React.ReactNode = null;
-  const text: React.ReactNode[] = [];
-  React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child) && typeof child.type !== 'string') {
-      const type: any = child.type;
-      if (type.displayName?.includes('Icon') || child.props.className?.includes('lucide')) {
-        if (!icon) {
-          icon = child;
-        } else {
-          text.push(child);
-        }
-      } else {
-        text.push(child);
-      }
-    } else {
-      text.push(child);
-    }
-  });
+  const childrenArray = React.Children.toArray(children);
+  const icon = childrenArray[0];
+  const text = childrenArray.slice(1);
+
   return (
-    <div className="flex items-center">
+    <div className="flex w-full items-center">
       {icon}
       {!isCollapsed && <span className={cn("ml-3 truncate", isActive && "font-semibold")}>{text}</span>}
     </div>
