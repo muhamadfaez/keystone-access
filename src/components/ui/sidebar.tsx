@@ -86,7 +86,7 @@ const Header = ({ className, children }: { className?: string; children: React.R
   return (
     <div
       className={cn(
-        "flex h-16 items-center border-b border-sidebar-border",
+        "flex h-16 items-center border-sidebar-border",
         isCollapsed ? "justify-center" : "px-6",
         className
       )}
