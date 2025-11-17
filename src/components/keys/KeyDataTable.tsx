@@ -30,6 +30,8 @@ import { Skeleton } from '../ui/skeleton';
 import { toast } from 'sonner';
 import { EmptyState } from '../layout/EmptyState';
 import { useAuthStore } from '@/stores/authStore';
+import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 type SortableKey = keyof Key;
 type SortDirection = 'ascending' | 'descending';
 const StatusBadge = ({ available, total }: { available: number, total: number }) => {
@@ -42,8 +44,18 @@ type KeyDataTableProps = {
   statusFilter: string;
   typeFilter: string;
   searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  setStatusFilter: (value: string) => void;
+  setTypeFilter: (value: string) => void;
 };
-export function KeyDataTable({ statusFilter, typeFilter, searchTerm }: KeyDataTableProps) {
+export function KeyDataTable({
+  statusFilter,
+  typeFilter,
+  searchTerm,
+  setSearchTerm,
+  setStatusFilter,
+  setTypeFilter
+}: KeyDataTableProps) {
   const { data: keysData, isLoading, error } = useApi<{ items: Key[] }>(['keys']);
   const user = useAuthStore((state) => state.user);
   const [sortConfig, setSortConfig] = useState<{ key: SortableKey; direction: SortDirection } | null>(null);
@@ -236,6 +248,38 @@ export function KeyDataTable({ statusFilter, typeFilter, searchTerm }: KeyDataTa
     <>
       <Card>
         <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <div className="w-full md:max-w-sm">
+              <Input
+                placeholder="Search keys..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Available">Available</SelectItem>
+                  <SelectItem value="Issued">Fully Issued</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Single">Single</SelectItem>
+                  <SelectItem value="Master">Master</SelectItem>
+                  <SelectItem value="Sub-Master">Sub-Master</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="border rounded-md">
             <Table>
               <TableHeader>
