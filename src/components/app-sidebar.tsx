@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Home, KeyRound, Users, BarChart3, Settings, ClipboardCheck, KeySquare, History, DoorOpen } from "lucide-react";
 import { Sidebar, useSidebar } from "@/components/ui/sidebar";
 import { AppLogo } from "./layout/AppLogo";
@@ -39,15 +39,14 @@ export function AppSidebar(): JSX.Element {
       <Sidebar.Content>
         <Sidebar.Menu>
           {filteredNavItems.map((item) => (
-            <Sidebar.MenuItem key={item.href} tooltip={item.label}>
-              <NavLink to={item.href} end={item.href === '/'}>
-                {({ isActive }) => (
-                  <Sidebar.MenuButton isActive={isActive}>
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Sidebar.MenuButton>
-                )}
-              </NavLink>
+            <Sidebar.MenuItem
+              key={item.href}
+              tooltip={item.label}
+              to={item.href}
+              end={item.href === '/'}
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.label}</span>
             </Sidebar.MenuItem>
           ))}
         </Sidebar.Menu>

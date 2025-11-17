@@ -177,11 +177,15 @@ const MenuButton = ({ children, isActive }: { children: React.ReactNode, isActiv
   const { isCollapsed } = useSidebar();
   let icon: React.ReactNode = null;
   const text: React.ReactNode[] = [];
-
   React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child) && typeof child.type !== 'string' && (child.type.displayName?.includes('Icon') || child.props.className?.includes('lucide'))) {
-      if (!icon) {
-        icon = child;
+    if (React.isValidElement(child) && typeof child.type !== 'string') {
+      const type: any = child.type;
+      if (type.displayName?.includes('Icon') || child.props.className?.includes('lucide')) {
+        if (!icon) {
+          icon = child;
+        } else {
+          text.push(child);
+        }
       } else {
         text.push(child);
       }
@@ -189,7 +193,6 @@ const MenuButton = ({ children, isActive }: { children: React.ReactNode, isActiv
       text.push(child);
     }
   });
-
   return (
     <>
       {icon}

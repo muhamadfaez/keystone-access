@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { Loader2 } from 'lucide-react';
-import { AppLayout } from './AppLayout';
 export function ProtectedRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -30,8 +29,6 @@ export function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
   return (
-    <AppLayout>
-      <Outlet />
-    </AppLayout>
+    <Outlet />
   );
 }

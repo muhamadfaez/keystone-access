@@ -25,6 +25,7 @@ import { KeyRequestsPage } from './pages/KeyRequestsPage';
 import { MyKeysPage } from './pages/MyKeysPage';
 import { TransactionLogPage } from './pages/TransactionLogPage';
 import { RoomsPage } from './pages/RoomsPage';
+import { AppLayout } from './components/layout/AppLayout';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -38,45 +39,50 @@ const router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
     children: [
       {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "keys",
-        element: <KeyInventoryPage />,
-      },
-      {
-        path: "my-keys",
-        element: <MyKeysPage />,
-      },
-      {
-        path: "users",
-        element: <UsersPage />,
-      },
-      {
-        path: "requests",
-        element: <KeyRequestsPage />,
-      },
-      {
-        path: "reports",
-        element: <ReportsPage />,
-      },
-      {
-        path: "log",
-        element: <TransactionLogPage />,
-      },
-      {
-        path: "rooms",
-        element: <RoomsPage />,
-      },
-      {
-        path: "settings",
-        element: <SettingsPage />,
-      },
-      {
-        path: "profile",
-        element: <ProfilePage />,
-      },
+        element: <AppLayout />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+          {
+            path: "keys",
+            element: <KeyInventoryPage />,
+          },
+          {
+            path: "my-keys",
+            element: <MyKeysPage />,
+          },
+          {
+            path: "users",
+            element: <UsersPage />,
+          },
+          {
+            path: "requests",
+            element: <KeyRequestsPage />,
+          },
+          {
+            path: "reports",
+            element: <ReportsPage />,
+          },
+          {
+            path: "log",
+            element: <TransactionLogPage />,
+          },
+          {
+            path: "rooms",
+            element: <RoomsPage />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />,
+          },
+          {
+            path: "profile",
+            element: <ProfilePage />,
+          },
+        ]
+      }
     ],
   },
 ]);

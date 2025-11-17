@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -186,27 +185,25 @@ export function ReportsPage() {
     );
   };
   return (
-    <AppLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-8 md:py-10 lg:py-12">
-          <PageHeader
-            title="Reports"
-            subtitle="Analyze key inventory and assignment data."
-          >
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" onClick={handleExportPdf} disabled={isLoading || !data}>
-                <FileDown className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-              <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || !data}>
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Download Excel
-              </Button>
-            </div>
-          </PageHeader>
-          {renderContent()}
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="py-8 md:py-10 lg:py-12">
+        <PageHeader
+          title="Reports"
+          subtitle="Analyze key inventory and assignment data."
+        >
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={handleExportPdf} disabled={isLoading || !data}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
+            <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || !data}>
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Download Excel
+            </Button>
+          </div>
+        </PageHeader>
+        {renderContent()}
       </div>
-    </AppLayout>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -14,7 +13,7 @@ export function RoomsPage() {
     return <Navigate to="/" replace />;
   }
   return (
-    <AppLayout>
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-8 md:py-10 lg:py-12">
           <PageHeader
@@ -30,6 +29,6 @@ export function RoomsPage() {
         </div>
       </div>
       <AddRoomDialog isOpen={isAddDialogOpen} onOpenChange={setAddDialogOpen} />
-    </AppLayout>
+    </>
   );
 }
