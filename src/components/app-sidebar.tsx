@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Home, KeyRound, Users, BarChart3, Settings, ClipboardCheck, KeySquare, History, DoorOpen, LogOut } from "lucide-react";
 import { Sidebar, useSidebar } from "@/components/ui/sidebar";
 import { AppLogo } from "./layout/AppLogo";
@@ -89,14 +89,16 @@ export function AppSidebar(): JSX.Element {
             </TooltipContent>
           </Tooltip>
         ) : (
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback>{user ? getInitials(user.name) : '...'}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 truncate">
-              <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-sidebar-foreground/70 capitalize truncate">{user?.role}</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Link to="/profile" className="flex flex-1 items-center gap-3 truncate rounded-md p-1 transition-colors hover:bg-sidebar-accent">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback>{user ? getInitials(user.name) : '...'}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 truncate">
+                <p className="text-sm font-semibold truncate">{user?.name}</p>
+                <p className="text-xs text-sidebar-foreground/70 capitalize truncate">{user?.role}</p>
+              </div>
+            </Link>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" onClick={handleLogout}>
