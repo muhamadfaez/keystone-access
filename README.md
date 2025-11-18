@@ -1,6 +1,6 @@
 # KeyTrack
 A modern, secure web application for managing university keys, tracking inventory, and overseeing key assignments.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/muhamadfaez/keystone-access)
 KeyTrack is a sophisticated, visually stunning web application designed for university key management. It provides a centralized system for administrators to track, inventory, and manage the entire lifecycle of keys. The system features a main dashboard for at-a-glance statistics, a comprehensive key inventory with search and filtering, a personnel directory, and a transaction log for all key assignments. Built on Cloudflare Workers and Durable Objects, it ensures high performance, security, and scalability. The user interface is crafted with meticulous attention to detail, using a modern design system to provide an intuitive, efficient, and delightful user experience.
 ## ✨ Key Features
 -   **Dashboard Overview:** At-a-glance statistics for total keys, issued keys, available keys, and overdue keys.
@@ -81,4 +81,4 @@ This project is configured for seamless deployment to Cloudflare Pages and Worke
     bun run deploy
     ```
 Alternatively, you can deploy directly from your GitHub repository using the button below.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/muhamadfaez/keystone-access)
